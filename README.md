@@ -1,9 +1,9 @@
-# 🧪 Elemonsters
+# 🧪 Isotopia
 
-A Pokémon-style pixel game for learning the periodic table. Students explore a
-lab town as a dog trainer, walk up to element "monsters," and answer
-multiple-choice chemistry questions about atomic structure (protons, electrons,
-ions, valence, isotopes, and more).
+A Pokémon-style pixel game for learning the periodic table. Students explore the
+town of Isotopia as a dog trainer, walk up to friendly element creatures called
+**Elementals**, and answer multiple-choice chemistry questions about atomic
+structure (protons, electrons, ions, valence, isotopes, and more).
 
 Built on [Phaser 3](https://phaser.io/) with grid-based movement via
 [grid-engine](https://github.com/Annoraaq/grid-engine), and an optional
@@ -13,12 +13,12 @@ question bank and (soon) per-student progress.
 ## Play
 
 - **Arrow keys** — move the dog around the lab.
-- **E** — talk to an Elemonster you're facing to start its quiz.
-- **1–4 / click** — answer. Correct answers mark the monster as *Seen*.
+- **E** — talk to an Elemental you're facing to start its quiz.
+- **1–4 / click** — answer. Correct answers mark the Elemental as *Seen*.
 - **Enter / Esc** — close the quiz.
 - Reach the **EXIT ▶** door to leave the room.
 
-The 7 starter Elemonsters (Q1 "starter" set): Hydrogen, Helium, Carbon,
+The 7 starter Elementals (Q1 "starter" set): Hydrogen, Helium, Carbon,
 Nitrogen, Oxygen, Sodium, Chlorine.
 
 ## Run it locally
@@ -71,7 +71,7 @@ Security rules live in `firebase/database.rules.json` (Realtime Database) and
 - [ ] Sync each student's Seen/Caught progress to `students/{uid}`
 - [ ] Drive daily focus from the 40-day schedule (`dailySchedule`)
 - [ ] End-of-quarter **Gym** mastery challenge (HP bar)
-- [ ] Replace placeholder tinted sprites with real Elemonsters art
+- [ ] Replace placeholder tinted sprites with real Elemental art
 
 ## Credits & license
 

@@ -1,4 +1,4 @@
-// The 7 starter Elemonsters (Q1 "starter" theme).
+// The 7 starter Elementals (Q1 "starter" theme).
 // `monster` names are placeholders from the spec — swap freely once real art lands.
 // `tint` is a Phaser tint applied to the placeholder sprite so each monster reads
 // as visually distinct until real sprite sheets replace it.

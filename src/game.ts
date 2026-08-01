@@ -12,10 +12,10 @@ import { loadQuestionBank } from "./data/questionSource";
         const uid = await ensureSignedIn();
         await loadQuestionBank();
         console.log(uid
-            ? `Elemonsters: signed in (${uid.slice(0, 6)}…), questions loaded from Firebase.`
-            : "Elemonsters: Firebase not configured — using local questions.");
+            ? `Isotopia: signed in (${uid.slice(0, 6)}…), questions loaded from Firebase.`
+            : "Isotopia: Firebase not configured — using local questions.");
     } catch (err) {
-        console.warn("Elemonsters: using local questions (Firebase unavailable):", err);
+        console.warn("Isotopia: using local questions (Firebase unavailable):", err);
     }
 })();
 

@@ -64,7 +64,7 @@ export async function openQuiz(elementId: string): Promise<void> {
         });
 
         feedbackEl.textContent = correct
-            ? `Nice! ${element!.monster} was added to your Elemondex (Seen).`
+            ? `Nice! ${element!.monster} was added to your Isotopedex (Seen).`
             : `Not quite — the answer is highlighted in green. Keep exploring!`;
         feedbackEl.classList.add(correct ? 'ok' : 'no');
 

@@ -1,8 +1,7 @@
 {
-    "name": "phaser-rpg-template",
-    "version": "0.1-alpha.0",
-    "author": "danielart",
-    "description": "A Phaser 3 Project Template for RPG using Rollup and TypeScript",
+    "name": "isotopia",
+    "version": "0.1.0",
+    "description": "Isotopia - a Pokemon-style pixel game for learning the periodic table",
     "main": "src/game.ts",
     "scripts": {
         "dev": "rollup --config rollup.config.dev.js",
