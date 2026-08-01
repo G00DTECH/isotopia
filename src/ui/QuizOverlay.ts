@@ -8,12 +8,25 @@ import { markSeen } from '../data/progress';
 import { getElement } from '../data/elements';
 
 let isOpen = false;
+let firstFightReacted = false;
 
 // Freeze / unfreeze the dog by toggling the shared `inDialogue` flag that the
 // movement + interaction systems already listen for.
 function setDialogue(active: boolean): void {
     GlobalInfo._gameProgress.inDialogue = active;
     GlobalInfo.emit('inDialogue', active);
+}
+
+// On the very first encounter, briefly pop the pixel dog as a reaction image.
+// It sits above the quiz but ignores pointer events, then removes itself.
+function showDogReaction(): void {
+    const reaction = document.createElement('div');
+    reaction.className = 'dog-reaction';
+    reaction.innerHTML = `
+        <img src="assets/images/pixel-dog.png" alt="Your dog reacts">
+        <div class="dog-reaction-caption">Woof! Your first Elemental!</div>`;
+    document.body.appendChild(reaction);
+    setTimeout(() => reaction.remove(), 2400);   // matches the CSS animation
 }
 
 export async function openQuiz(elementId: string): Promise<void> {
@@ -24,6 +37,11 @@ export async function openQuiz(elementId: string): Promise<void> {
 
     isOpen = true;
     setDialogue(true);
+
+    if (!firstFightReacted) {
+        firstFightReacted = true;
+        showDogReaction();
+    }
 
     const overlay = document.createElement('div');
     overlay.className = 'quiz-overlay';
