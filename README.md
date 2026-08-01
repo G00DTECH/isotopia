@@ -1,7 +1,7 @@
 # 🧪 Elemonsters
 
 A Pokémon-style pixel game for learning the periodic table. Students explore a
-lab town as a dog trainer, walk up to element "monsters," and answer
+lab town as a... lab, walk up to element "monsters," and answer
 multiple-choice chemistry questions about atomic structure (protons, electrons,
 ions, valence, isotopes, and more).
 
