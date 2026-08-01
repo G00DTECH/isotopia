@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Generate the outdoor Town tilemap (test_map.json) from the modern_exterior sheet.
 
-Buildings are copied wholesale as rectangular GID blocks (same tileset, so
-gid = row*COLS + col + 1). Collision (ge_collide) is added per-GID to every
-building/tree tile except the door columns, which stay walkable so the Door
-objects placed in TestScene can trigger a scene switch.
+The town is themed on **Gray, Maine (04039)**: five enterable storefronts
+(HOME, HARDWARE, HANNAFORD, LIBRARY, AUTO) plus a decorative **lake**. Buildings
+are copied wholesale as rectangular GID blocks from a small set of reused facade
+models (same tileset, so gid = row*COLS + col + 1). Collision (ge_collide) is
+added per-GID to every building/tree/water tile except the door columns, which
+stay walkable so the Door objects placed in TestScene can trigger a scene switch.
+
+The signs/doors/Elemental spawns live on the TypeScript side (TestScene.ts) —
+keep the constants there in sync with the PLACEMENTS / LAKE below. This script
+prints the door tiles it computed to make that easy.
 
 Run:  python3 tools/gen_town.py   (writes src/assets/tilemap/test_map.json)
 """
@@ -13,26 +19,34 @@ import json, os
 SHEET_COLS = 141                      # modern_exterior.png is 141 tiles wide
 def gid(col, row): return row * SHEET_COLS + col + 1
 
-W, H = 28, 16                         # town size in tiles
+W, H = 40, 24                         # town size in tiles (was 28x16 — ~2.1x area)
 GRASS = gid(8, 2)                     # solid grass
 PATH  = gid(17, 1)                    # grey cobblestone
+# A GID reused only for the lake's collision cells. Its art is hidden under the
+# blue "LAKE" graphic drawn in TestScene, so the exact tile doesn't matter — it
+# just has to be a GID used nowhere else (collision is per-GID and global).
+WATER = gid(0, 50)
 
-# --- building models copied from the sheet: (sheet_col0, sheet_row0, w, h, door_local_col)
-BUILDINGS = {
-    # town origin col, row are filled per-placement below
-    'shop': dict(sc=41, sr=88, w=8, h=8, door=5),   # red MARKET
-    'lab':  dict(sc=58, sr=88, w=7, h=8, door=3),   # blue MARKET
-    'home': dict(sc=72, sr=88, w=8, h=8, door=4),   # brown MARKET
+# --- reused facade models copied from the sheet: (sheet_col0, row0, w, h, door_local_col)
+FACADES = {
+    'red':   dict(sc=41, sr=88, w=8, h=8, door=5),   # red MARKET facade
+    'blue':  dict(sc=58, sr=88, w=7, h=8, door=3),   # blue MARKET facade
+    'brown': dict(sc=72, sr=88, w=8, h=8, door=4),   # brown MARKET facade
 }
-# where each building sits in the town (top-left tile)
+# Each Gray, Maine venue: (key, facade, town_col, town_row). Facades are reused
+# across venues (the sign plaques in TestScene tell them apart).
 PLACEMENTS = [
-    ('shop', 1, 1),
-    ('lab', 10, 1),
-    ('home', 19, 1),
+    ('hardware',  'red',   1,  1),
+    ('hannaford', 'red',   11, 1),
+    ('library',   'blue',  21, 1),
+    ('home',      'brown', 30, 1),
+    ('auto',      'brown', 1,  13),
 ]
 # tree model: 2 wide x 3 tall, trunk on bottom row
 TREE = dict(sc=16, sr=3, w=2, h=3)
-TREE_SPOTS = [(1, 11), (25, 11), (5, 13), (22, 13)]
+TREE_SPOTS = [(9, 11), (19, 11), (38, 3), (12, 21), (19, 21)]
+# lake: a rectangular pond in the lower-right, drawn blue in TestScene
+LAKE = dict(x=24, y=15, w=14, h=7)
 
 floor = [GRASS] * (W * H)
 walls = [0] * (W * H)
@@ -42,18 +56,21 @@ def put(layer, tx, ty, g):
     if 0 <= tx < W and 0 <= ty < H:
         layer[ty * W + tx] = g
 
-# ground: grass everywhere, then a cobblestone plaza / walkway
-for (name, ox, oy) in PLACEMENTS:
-    b = BUILDINGS[name]
+# ground: grass everywhere, then cobblestone stubs below each door + a plaza.
+for (name, facade, ox, oy) in PLACEMENTS:
+    b = FACADES[facade]
     door_col = ox + b['door']
-    for ry in range(9, 11):           # short path stub below each door
+    door_row = oy + b['h'] - 1
+    for ry in range(door_row + 1, door_row + 3):   # short path stub below each door
         put(floor, door_col, ry, PATH)
-for tx in range(6, 24):               # horizontal walkway across the plaza
+for tx in range(2, 38):               # horizontal walkway across the plaza
     put(floor, tx, 11, PATH)
+for ry in range(11, 21):              # vertical path linking the AUTO shop to the plaza
+    put(floor, 5, ry, PATH)
 
 # buildings: stamp GID blocks; collide everything except the door column
-for (name, ox, oy) in PLACEMENTS:
-    b = BUILDINGS[name]
+for (name, facade, ox, oy) in PLACEMENTS:
+    b = FACADES[facade]
     for dy in range(b['h']):
         for dx in range(b['w']):
             g = gid(b['sc'] + dx, b['sr'] + dy)
@@ -69,6 +86,12 @@ for (ox, oy) in TREE_SPOTS:
             put(walls, ox + dx, oy + dy, g)
             if dy == TREE['h'] - 1:
                 collide.add(g)
+
+# lake: every water cell blocks. Art is hidden by TestScene's blue "LAKE" graphic.
+for ly in range(LAKE['y'], LAKE['y'] + LAKE['h']):
+    for lx in range(LAKE['x'], LAKE['x'] + LAKE['w']):
+        put(walls, lx, ly, WATER)
+collide.add(WATER)
 
 tileset_tiles = [
     {"id": g - 1, "properties": [{"name": "ge_collide", "type": "bool", "value": True}]}
@@ -101,7 +124,8 @@ with open(out, 'w') as f:
     json.dump(tilemap, f)
 
 # door tiles for TestScene wiring (town col,row of each door's bottom tile)
-doors = {name: (ox + BUILDINGS[name]['door'], oy + BUILDINGS[name]['h'] - 1)
-         for (name, ox, oy) in PLACEMENTS}
+doors = {name: (ox + FACADES[facade]['door'], oy + FACADES[facade]['h'] - 1)
+         for (name, facade, ox, oy) in PLACEMENTS}
 print("wrote", os.path.relpath(out))
-print("collide gids:", len(collide), " door tiles:", doors)
+print("collide gids:", len(collide))
+print("door tiles:", doors)

@@ -46,6 +46,26 @@ export const QUESTIONS: Question[] = [
     { elementId: 'chlorine', angle: 'protons', prompt: 'How many protons does chlorine have?', choices: ['7', '17', '18', '35'], correctIndex: 1, quarterTheme: 'starter' },
     { elementId: 'chlorine', angle: 'ion',     prompt: 'Chlorine gains one electron to form which ion?', choices: ['Cl⁺', 'Cl⁻', 'Cl²⁻', 'Cl (no charge)'], correctIndex: 1, quarterTheme: 'starter' },
     { elementId: 'chlorine', angle: 'mass',    prompt: "Chlorine's atomic mass is about 35.45. Why isn't it a whole number?", choices: ['A rounding error', "It's a weighted average of its isotopes", 'Electrons add mass', 'It has partial protons'], correctIndex: 1, quarterTheme: 'starter' },
+
+    // --- Magmunch — Magnesium (Mg) ---
+    { elementId: 'magnesium', angle: 'protons', prompt: "Magnesium's atomic number is 12. How many protons does it have?", choices: ['2', '10', '12', '24'], correctIndex: 2, quarterTheme: 'starter' },
+    { elementId: 'magnesium', angle: 'ion',     prompt: 'Magnesium loses 2 electrons. Which ion does it form?', choices: ['Mg⁻', 'Mg⁺', 'Mg²⁺', 'Mg²⁻'], correctIndex: 2, quarterTheme: 'starter' },
+    { elementId: 'magnesium', angle: 'valence', prompt: 'How many valence electrons does magnesium have?', choices: ['1', '2', '6', '8'], correctIndex: 1, quarterTheme: 'starter' },
+
+    // --- Ferrox — Iron (Fe) ---
+    { elementId: 'iron', angle: 'symbol',  prompt: "What is iron's chemical symbol?", choices: ['Ir', 'In', 'Fe', 'I'], correctIndex: 2, quarterTheme: 'starter' },
+    { elementId: 'iron', angle: 'protons', prompt: 'How many protons does iron have?', choices: ['8', '16', '26', '56'], correctIndex: 2, quarterTheme: 'starter' },
+    { elementId: 'iron', angle: 'ion',     prompt: 'Iron commonly forms ions with which two charges?', choices: ['−2 and −3', '+2 and +3', '+1 only', '−1 only'], correctIndex: 1, quarterTheme: 'starter' },
+
+    // --- Neono — Neon (Ne) ---
+    { elementId: 'neon', angle: 'protons', prompt: "Neon's atomic number is 10. How many protons does it have?", choices: ['2', '8', '10', '20'], correctIndex: 2, quarterTheme: 'starter' },
+    { elementId: 'neon', angle: 'symbol',  prompt: "What is neon's chemical symbol?", choices: ['N', 'Ne', 'Na', 'No'], correctIndex: 1, quarterTheme: 'starter' },
+    { elementId: 'neon', angle: 'config',  prompt: 'Why is neon a noble gas that rarely reacts?', choices: ['It has 1 valence electron', 'Its outer shell is full', 'It is a metal', 'It has no electrons'], correctIndex: 1, quarterTheme: 'starter' },
+
+    // --- Uranibbit — Uranium (U) ---
+    { elementId: 'uranium', angle: 'protons',  prompt: 'How many protons does uranium have?', choices: ['46', '92', '146', '238'], correctIndex: 1, quarterTheme: 'starter' },
+    { elementId: 'uranium', angle: 'neutrons', prompt: 'Uranium-238 has 92 protons. How many neutrons does it have?', choices: ['92', '146', '238', '330'], correctIndex: 1, quarterTheme: 'starter' },
+    { elementId: 'uranium', angle: 'symbol',   prompt: "What is uranium's chemical symbol?", choices: ['Ur', 'U', 'Un', 'Ux'], correctIndex: 1, quarterTheme: 'starter' },
 ];
 
 /** All seed questions for one element. */

@@ -2,8 +2,10 @@ import { GridEngine } from "grid-engine";
 
 import TestScene from "./Scenes/TestScene";
 import HomeScene from "./Scenes/HomeScene";
-import LabScene from "./Scenes/LabScene";
-import ShopScene from "./Scenes/ShopScene";
+import HardwareScene from "./Scenes/HardwareScene";
+import HannafordScene from "./Scenes/HannafordScene";
+import AutoScene from "./Scenes/AutoScene";
+import LibraryScene from "./Scenes/LibraryScene";
 import { ensureSignedIn } from "./data/auth";
 import { loadQuestionBank } from "./data/questionSource";
 
@@ -24,7 +26,7 @@ import { loadQuestionBank } from "./data/questionSource";
 const config = {
     type: Phaser.AUTO,
     backgroundColor: '#ffffff',
-    scene: [TestScene, HomeScene, LabScene, ShopScene],
+    scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene],
     plugins: {
         scene: [
             {

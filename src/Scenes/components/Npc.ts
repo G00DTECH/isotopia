@@ -41,17 +41,21 @@ export class Npc extends NpcsAndObjects {
         xPosition: integer,
         yPosition: integer,
         container: Phaser.GameObjects.Container,
-        walkingAnimationMapping: number | WalkingAnimationMapping = 1
+        walkingAnimationMapping?: number | WalkingAnimationMapping
     ): void {
-        this.scene.gridEngine.addCharacter(
-            {
-                id: (this.name),
-                sprite: npcSprite,
-                container,
-                startPosition: { x: xPosition, y: yPosition },
-                walkingAnimationMapping: walkingAnimationMapping,
-                facingDirection: this.facingDirection || Direction.DOWN
-            }
-        )
+        // A single-frame image (e.g. an Elemental's real art PNG) has no walk
+        // frames, so grid-engine must be left without a mapping — passing one
+        // makes it index frames that don't exist. Only include it when set.
+        const config: any = {
+            id: (this.name),
+            sprite: npcSprite,
+            container,
+            startPosition: { x: xPosition, y: yPosition },
+            facingDirection: this.facingDirection || Direction.DOWN
+        }
+        if (walkingAnimationMapping !== undefined) {
+            config.walkingAnimationMapping = walkingAnimationMapping
+        }
+        this.scene.gridEngine.addCharacter(config)
     }
 }

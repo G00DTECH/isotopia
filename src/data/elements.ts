@@ -1,4 +1,5 @@
-// The 7 starter Elementals (Q1 "starter" theme).
+// The starter Elementals. The first 7 are the Q1 "starter" theme; the last 4
+// (Mg, Fe, Ne, U) were added with real character art.
 // `monster` names are placeholders from the spec — swap freely once real art lands.
 // `tint` is a Phaser tint applied to the placeholder sprite so each monster reads
 // as visually distinct until real sprite sheets replace it.
@@ -20,6 +21,11 @@ export const ELEMENTS: ElementInfo[] = [
     { id: 'oxygen',   symbol: 'O',  name: 'Oxygen',   monster: 'Oxymon',    number: 8,  tint: 0xef5350 },
     { id: 'sodium',   symbol: 'Na', name: 'Sodium',   monster: 'Sodimon',   number: 11, tint: 0xba68c8 },
     { id: 'chlorine', symbol: 'Cl', name: 'Chlorine', monster: 'Chloromon', number: 17, tint: 0xaed581 },
+    // Added with real character art (see src/assets/elementals + data/elementalArt.ts).
+    { id: 'magnesium', symbol: 'Mg', name: 'Magnesium', monster: 'Magmunch',  number: 12, tint: 0xff8a65 },
+    { id: 'iron',      symbol: 'Fe', name: 'Iron',      monster: 'Ferrox',    number: 26, tint: 0x8d6e63 },
+    { id: 'neon',      symbol: 'Ne', name: 'Neon',      monster: 'Neono',     number: 10, tint: 0xff7043 },
+    { id: 'uranium',   symbol: 'U',  name: 'Uranium',   monster: 'Uranibbit', number: 92, tint: 0x7cb342 },
 ];
 
 export const ELEMENTS_BY_ID: Record<string, ElementInfo> =

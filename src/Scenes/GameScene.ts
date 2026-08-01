@@ -5,6 +5,14 @@ import { NpcsAndObjects, createCharacterSprite } from './components/NpcAndObject
 import GlobalInfo from '../GlobalInfo'
 import { GridEngine, Position, Direction, CollisionStrategy } from 'grid-engine'
 import { basicMovement } from './components/Characters'
+import { Npc } from './components/Npc'
+import { getElement } from '../data/elements'
+import { elementalArtKey, elementalArtPath } from '../data/elementalArt'
+import { openQuiz } from '../ui/QuizOverlay'
+
+// Real Elemental art is a big single image; this scale reads it down to roughly
+// character size on the grid (the placeholder NPC spritesheet uses ~0.7).
+const ELEMENTAL_ART_SCALE = 0.05
 
 export default abstract class GameScene extends Phaser.Scene {
 
@@ -195,6 +203,53 @@ export default abstract class GameScene extends Phaser.Scene {
             '../assets/Characters/Perli.png',
             { frameWidth: 198, frameHeight: 188 }
         );
+    }
+
+    // Queue the real art PNGs for the given Elementals (skips ones with no art
+    // and ones already cached). Call from a scene's loadObjectImages().
+    loadElementalArt(elementIds: string[]): void {
+        elementIds.forEach(id => {
+            const key = elementalArtKey(id)
+            if (key && !this.textures.exists(key)) {
+                this.load.image(key, elementalArtPath(id))
+            }
+        })
+    }
+
+    // Spawn one Elemental at a tile: real character art if it has any, otherwise
+    // the tinted placeholder NPC. Walking up + pressing E opens its quiz. A
+    // floating element-symbol label makes each one identifiable.
+    spawnElemental(elementId: string, x: number, y: number): void {
+        const element = getElement(elementId)
+        if (!element) return
+        const artKey = elementalArtKey(elementId)
+
+        const monster = new Npc({
+            scene: this,
+            xPosition: x,
+            yPosition: y,
+            texture: artKey ?? this.imageNames.Veterinary,
+            scale: artKey ? ELEMENTAL_ART_SCALE : 0.7,
+            tint: artKey ? undefined : element.tint,
+            action: () => { openQuiz(elementId) },
+            // Real art is a single frame → no walking animation mapping.
+            walkingAnimationMapping: artKey ? undefined : 0,
+        })
+        this.addFloatingLabel(monster.name, element.symbol, '#ffffff')
+    }
+
+    // Small always-on text label above a character or door.
+    addFloatingLabel(charName: string, text: string, color: string): void {
+        const sprite = this.gridEngine.getSprite(charName)
+        if (!sprite) return
+        const top = sprite.getTopCenter()
+        this.add.text(top.x, top.y - 2, text, {
+            fontFamily: 'monospace',
+            fontSize: '9px',
+            color,
+            backgroundColor: '#000000aa',
+            padding: { x: 2, y: 1 },
+        }).setOrigin(0.5, 1).setDepth(9999)
     }
 
     // load map resources
