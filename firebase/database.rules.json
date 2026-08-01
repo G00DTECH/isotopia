@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "questions": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.teacher === true"
+    },
+    "dailySchedule": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.teacher === true"
+    },
+    "students": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.teacher === true)",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}
