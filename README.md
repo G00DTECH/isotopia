@@ -1,7 +1,7 @@
 # 🧪 Isotopia
 
 A Pokémon-style pixel game for learning the periodic table. Students explore the
-town of Isotopia as a dog trainer, walk up to friendly element creatures called
+town of Isotopia as a... lab, walk up to friendly element creatures called
 **Elementals**, and answer multiple-choice chemistry questions about atomic
 structure (protons, electrons, ions, valence, isotopes, and more).
 
