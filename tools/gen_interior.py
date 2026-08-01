@@ -13,11 +13,14 @@ Run:  python3 tools/gen_interior.py
 import json, os
 
 N = 16                       # 16x16 grid over the 1024px room (64px per cell)
-WALK_COLS = range(3, 12)     # inclusive 3..11
-WALK_ROWS = range(10, 14)    # inclusive 10..13
+
+# Walkable column range (inclusive) per row, tracing the isometric white-floor
+# diamond that every Luna Town room shares. Verified against treats/library/home
+# so the dog stays on the visible floor and off furniture and walls.
+WALK = {9: (6, 9), 10: (4, 11), 11: (3, 12), 12: (3, 12), 13: (4, 11), 14: (6, 9)}
 
 def walkable(c, r):
-    return c in WALK_COLS and r in WALK_ROWS
+    return r in WALK and WALK[r][0] <= c <= WALK[r][1]
 
 walls = [0 if walkable(i % N, i // N) else 1 for i in range(N * N)]
 
@@ -44,5 +47,4 @@ out = os.path.join(here, '..', 'src', 'assets', 'tilemap', 'interior_room.json')
 with open(out, 'w') as f:
     json.dump(tilemap, f)
 print("wrote", os.path.relpath(out),
-      "- walkable cols", WALK_COLS.start, "-", WALK_COLS.stop - 1,
-      "rows", WALK_ROWS.start, "-", WALK_ROWS.stop - 1)
+      "-", sum(c1 - c0 + 1 for c0, c1 in WALK.values()), "walkable floor tiles")
