@@ -28,7 +28,7 @@ export abstract class InteriorScene extends GameScene {
     private readonly backgroundPath: string;
 
     constructor(sceneName: SceneName, backgroundFile: string, elementIds: string[]) {
-        super(sceneName, InteriorScene.START.x, InteriorScene.START.y, [LayerType.Walls]);
+        super(sceneName, InteriorScene.START.x, InteriorScene.START.y, [LayerType.Floor, LayerType.Walls]);
         this.elementIds = elementIds;
         this.backgroundKey = `${sceneName}_bg`;
         this.backgroundPath = `../assets/rooms/${backgroundFile}`;

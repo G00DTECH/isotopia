@@ -108,6 +108,11 @@ answers, **Enter/Esc** closes the quiz. Reach the **EXIT ▶** door to leave.
 - Town tiles are copied by GID arithmetic (`gid = row*141 + col + 1`, sheet is
   141 tiles wide). `gen_town.py` render-checks against the sheet — if a building
   looks cut off, its width is wrong (the blue market is 7 wide, others 8).
+- **grid-engine treats a cell with NO tile on any layer as blocking**
+  (`hasBlockingTile` → `hasNoTile`). So every walkable cell needs a tile: the
+  interior `floor` layer is filled everywhere with a transparent walkable tile,
+  and collision lives on the `walls` layer (`blank16` id0 = walkable, id1 =
+  ge_collide). Leaving walkable cells empty freezes the dog at spawn.
 
 ## Roadmap (next, rough priority)
 1. Sync each student's Seen/Caught to `students/{uid}` in RTDB (currently only
