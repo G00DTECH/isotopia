@@ -1,6 +1,33 @@
 import GameScene from '../GameScene'
-import { Direction } from 'grid-engine'
+import { Direction, NoPathFoundStrategy } from 'grid-engine'
 import globalGameState from '../../GlobalInfo'
+
+// Click / tap to move: grid-engine pathfinds the player to the tile the player
+// clicked. Keyboard movement (basicMovement) still works alongside this.
+export function clickToMove(
+    scene: GameScene
+): void {
+    scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        // Only respond to the primary (left) button, and never while a dialogue
+        // or quiz is open.
+        if (!pointer.leftButtonDown() || globalGameState._gameProgress.inDialogue) {
+            return
+        }
+
+        // pointer.worldX/Y already account for camera scroll + zoom.
+        const targetTile = {
+            x: scene.map.worldToTileX(pointer.worldX),
+            y: scene.map.worldToTileY(pointer.worldY),
+        }
+
+        // If the clicked tile is blocked (e.g. an Elemental stands on it), walk
+        // to the nearest reachable tile instead so the player ends up adjacent
+        // and can press E to interact.
+        scene.gridEngine.moveTo(scene.playerName, targetTile, {
+            noPathFoundStrategy: NoPathFoundStrategy.CLOSEST_REACHABLE,
+        })
+    })
+}
 
 // create movements for NPCs
 export function basicMovement(

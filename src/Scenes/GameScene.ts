@@ -4,7 +4,7 @@ import { createMap } from './components/TileMap'
 import { NpcsAndObjects, createCharacterSprite } from './components/NpcAndObjects'
 import GlobalInfo from '../GlobalInfo'
 import { GridEngine, Position, Direction, CollisionStrategy } from 'grid-engine'
-import { basicMovement } from './components/Characters'
+import { basicMovement, clickToMove } from './components/Characters'
 import { Npc } from './components/Npc'
 import { getElement } from '../data/elements'
 import { elementalArtKey, elementalArtPath } from '../data/elementalArt'
@@ -121,6 +121,7 @@ export default abstract class GameScene extends Phaser.Scene {
         this.createCamera(this.map.widthInPixels, this.map.heightInPixels);
         this.createNpcs();
         basicMovement(this);
+        clickToMove(this);
         NpcsAndObjects.interaction(this)
 
         // stop animations like bark or sniff when player starts to move
