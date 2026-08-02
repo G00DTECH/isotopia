@@ -4,7 +4,7 @@
 
 import GlobalInfo from '../GlobalInfo';
 import { getQuestion } from '../data/questionSource';
-import { markSeen } from '../data/progress';
+import { markSeen, markCaught } from '../data/progress';
 import { getElement } from '../data/elements';
 
 let isOpen = false;
@@ -82,12 +82,14 @@ export async function openQuiz(elementId: string): Promise<void> {
         });
 
         feedbackEl.textContent = correct
-            ? `Nice! ${element!.monster} was added to your Isotopedex (Seen).`
-            : `Not quite — the answer is highlighted in green. Keep exploring!`;
+            ? `Caught it! ${element!.monster} joined your Isotopedex. 🎉`
+            : `Not quite — the answer is highlighted in green. ${element!.monster} was recorded as Seen; catch it next time!`;
         feedbackEl.classList.add(correct ? 'ok' : 'no');
 
-        // Any encounter (right or wrong) counts the monster as Seen, per spec §4.2.
-        markSeen(elementId);
+        // A correct answer catches the Elemental (adds its card); any encounter
+        // at least counts it as Seen (spec §4.2). markCaught also marks it seen.
+        if (correct) markCaught(elementId);
+        else markSeen(elementId);
         continueBtn.hidden = false;
         continueBtn.focus();
     }

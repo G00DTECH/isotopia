@@ -37,8 +37,7 @@ export default abstract class GameScene extends Phaser.Scene {
     keyD: Phaser.Input.Keyboard.Key;
     keyR: Phaser.Input.Keyboard.Key;
 
-    // interaction / menu keys
-    interactionKey!: Phaser.Input.Keyboard.Key;
+    // menu keys
     backKey!: Phaser.Input.Keyboard.Key;
 
     // main player
@@ -101,7 +100,6 @@ export default abstract class GameScene extends Phaser.Scene {
     create(): void {
         // asign logic to keys
         this.cursors = this.input.keyboard.createCursorKeys()
-        this.interactionKey = this.input.keyboard.addKey('E')
         this.backKey = this.input.keyboard.addKey('ESC')
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
@@ -218,14 +216,15 @@ export default abstract class GameScene extends Phaser.Scene {
     }
 
     // Spawn one Elemental at a tile: real character art if it has any, otherwise
-    // the tinted placeholder NPC. Walking up + pressing E opens its quiz. No
+    // the tinted placeholder NPC. Walking within one tile opens its quiz
+    // automatically (no key press — see NpcsAndObjects proximity logic). No
     // floating label — the art speaks for itself (labels broke immersion).
     spawnElemental(elementId: string, x: number, y: number): void {
         const element = getElement(elementId)
         if (!element) return
         const artKey = elementalArtKey(elementId)
 
-        new Npc({
+        const npc = new Npc({
             scene: this,
             xPosition: x,
             yPosition: y,
@@ -236,6 +235,8 @@ export default abstract class GameScene extends Phaser.Scene {
             // Real art is a single frame → no walking animation mapping.
             walkingAnimationMapping: artKey ? undefined : 0,
         })
+        // Open the quiz on proximity rather than on an interact key.
+        npc.proximityTrigger = true
     }
 
     // A flavor NPC with real art that just wanders the map — no quiz, no plot.

@@ -20,12 +20,37 @@ export function clickToMove(
             y: scene.map.worldToTileY(pointer.worldY),
         }
 
+        // Visual confirmation that the tap registered (important on touch — kids
+        // otherwise can't tell if a tap "took"). A ring blooms and fades where
+        // they tapped.
+        showTapRipple(scene, pointer.worldX, pointer.worldY)
+
         // If the clicked tile is blocked (e.g. an Elemental stands on it), walk
-        // to the nearest reachable tile instead so the player ends up adjacent
-        // and can press E to interact.
+        // to the nearest reachable tile instead so the player ends up adjacent.
+        // Walking within one tile of an Elemental opens its quiz (no key press).
         scene.gridEngine.moveTo(scene.playerName, targetTile, {
             noPathFoundStrategy: NoPathFoundStrategy.CLOSEST_REACHABLE,
         })
+    })
+}
+
+// A small ring that blooms outward and fades at the tapped point.
+function showTapRipple(
+    scene: GameScene,
+    worldX: number,
+    worldY: number
+): void {
+    const ring = scene.add.circle(worldX, worldY, 7)
+    ring.setStrokeStyle(2, 0xffd166, 0.9)
+    ring.setFillStyle(0xffd166, 0.15)
+    ring.setDepth(50)            // above the map/buildings, below the HUD
+    scene.tweens.add({
+        targets: ring,
+        scale: { from: 0.4, to: 1.7 },
+        alpha: { from: 0.9, to: 0 },
+        duration: 420,
+        ease: 'Cubic.easeOut',
+        onComplete: () => ring.destroy(),
     })
 }
 

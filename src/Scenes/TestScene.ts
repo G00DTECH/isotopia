@@ -153,7 +153,7 @@ export default class TestScene extends GameScene {
 
     createNpcs(): void {
         // One Elemental per outdoor spawn — real art if it has any, else a tinted
-        // placeholder. Face it and press E to start its quiz (see spawnElemental).
+        // placeholder. Walk within one tile to start its quiz (see spawnElemental).
         MONSTER_SPAWNS.forEach(spawn => this.spawnElemental(spawn.elementId, spawn.x, spawn.y));
 
         // Neonu Reeves grooves around the plaza. No quiz — he just exists.

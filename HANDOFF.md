@@ -3,7 +3,55 @@
 A running summary of what was built and where things stand, so work can resume
 after clearing/compacting the conversation.
 
-## Latest session (2026-08) — art + movement + woods
+## Latest session (2026-08) — mobile movement + Isotopedex
+The students use **iPads**, so this pass made the game touch-only, fixed the one
+thing that made it unplayable without a keyboard, and built the **Isotopedex**
+(the creature-collection screen). **Not yet committed/pushed.**
+
+### Isotopedex (the "Pokédex")
+- **Corner button** (`#dex-button`, top-right, styled like a little red Pokédex
+  device with a blue lens) opens the collection. Pure DOM like `QuizOverlay`, so
+  it persists across every scene. Built in **`src/ui/Isotopedex.ts`**, mounted
+  once at startup via `initIsotopedex()` in `game.ts` (guards on DOMContentLoaded).
+- **Card grid**, one per element, ordered by atomic number. **Unseen** = dark
+  silhouette + "???"; **Seen** = art + names revealed; **Caught** = gold border +
+  "✓ Caught" badge. No-art elements (He/N/Cl) show a tinted disc with the symbol.
+  Cards show atomic #, protons, electrons (all = atomic number). Header shows
+  `caught/11 · seen/11` from `progress.counts()`. Opening freezes the dog
+  (`inDialogue`); ✕ / Esc / backdrop-tap closes.
+- **Closed the markCaught gap:** `QuizOverlay` now calls **`markCaught`** on a
+  **correct** answer (catches it → card added) and `markSeen` on a wrong one.
+  Feedback text updated ("Caught it! … joined your Isotopedex").
+- All styles in `index.css` under the "Isotopedex" section. HUD got a "Tap the
+  DEX" hint line.
+
+### Mobile-first movement (iPad)
+- **Quizzes now open on proximity, not a key.** Walking (tap-to-move or arrows)
+  to **within one tile** of an Elemental auto-opens its quiz — the dog turns to
+  face it first. This was **required**: the old flow needed the **E** key, which
+  an iPad has no way to press, so quizzes literally couldn't start on the tablets.
+  Logic in `NpcsAndObjects.interaction`/`checkProximity` (`NpcAndObjects.ts`):
+  subscribes to `movementStopped`, measures Chebyshev distance to each object
+  with `proximityTrigger = true` (set in `GameScene.spawnElemental`), and fires
+  once — re-arming (`object.armed`) only after the player steps back out of range,
+  so closing a quiz while still adjacent won't reopen it. Mirrors the door
+  step-on pattern. Also re-checks on `inDialogue` change (after a quiz closes).
+- **The E interact key is gone** — removed `interactionKey` (declaration +
+  `addKey`) from `GameScene` and the whole E-key/box-push facing path from
+  `NpcAndObjects.ts`. Arrow keys still move the dog (desktop dev); doors still
+  work via their step-on pad for both input methods.
+- **Tap ripple feedback** — a yellow ring blooms + fades where you tap
+  (`showTapRipple` in `Characters.ts`), so kids can tell a tap registered.
+- **iPad hardening:** Phaser `scale.mode = FIT` + `pixelArt: true` in `game.ts`
+  (the fixed 600×600 box was sitting tiny on an iPad; FIT fills the screen, and
+  pixelArt keeps the upscale crisp). `index.html` got a locked viewport
+  (`user-scalable=no, viewport-fit=cover`); `index.css` kills page scroll,
+  pull-to-refresh, text-selection, long-press callout and the grey tap flash,
+  and sets `touch-action: none` on the game. Quiz buttons bumped to a 44px
+  touch target. HUD text updated from "Arrow keys / E" to tap instructions.
+- The movement notes in the section below are now superseded by the above.
+
+## Previous session (2026-08) — art + movement + woods
 Most recent changes, newest first (all pushed to `main`, auto-deployed):
 - **Next up: the Pokédex** (see Roadmap #1) — this session ended right before
   starting it. `src/data/progress.ts` (Seen/Caught) + `src/data/elements.ts` +
@@ -63,10 +111,12 @@ npm install
 npm run watch    # dev server + live reload -> http://localhost:10001
 npm run build    # production build -> dist/
 ```
-Controls: **arrow keys _or_ click/tap** to move, **E** talks to a faced
-Elemental, **1–4/click** answers, **Enter/Esc** closes the quiz. To enter/leave
-a building, **step onto the square just outside its door** (no key press). Follow
-the **trail north** (between Hardware and Grocery) to reach the woods.
+Controls (mobile-first): **tap/click** where to walk (arrow keys still work on
+desktop); **walk within one tile of an Elemental** to auto-start its quiz (no
+key — the old **E** trigger was removed for iPad); **tap a choice / 1–4** answers,
+**tap Continue / Enter/Esc** closes the quiz. To enter/leave a building, **step
+onto the square just outside its door**. Follow the **trail north** (between
+Hardware and Grocery) to reach the woods.
 
 ## What's working
 - **Outdoor town** (40×24, ~2.1× the old 28×16) themed on **Gray, Maine
@@ -192,18 +242,10 @@ the **trail north** (between Hardware and Grocery) to reach the woods.
   add them to `firebase/*seed*.json` and re-import.
 
 ## Roadmap (next, rough priority)
-1. **Pokédex** (next up) — a screen listing all Elementals with art, symbol,
-   name, atomic number, and **Seen/Caught** status (silhouette/locked until seen).
-   - Data is ready: `progress.ts` exposes `statusOf(id)` → `'unseen'|'seen'|
-     'caught'`, plus `markSeen`/`markCaught`/`counts()`; `elements.ts` lists all 11
-     (symbol/name/atomicNumber/tint); `elementalArt.ts` gives each one's art key/path.
-   - Suggested build: `src/ui/PokedexOverlay.ts` modeled on `QuizOverlay.ts`,
-     opened with a key (e.g. **P**) wired in `GameScene.update`. Render unseen as a
-     dark silhouette, seen as art, caught with a ✓; show `counts()` as “N/11”.
-   - **Gap to close first:** `markSeen` is called (in `QuizOverlay`, when a quiz
-     opens) but **`markCaught` is never called** — nothing marks anything caught
-     yet. Decide the rule (e.g. first *correct* answer) and call `markCaught` in
-     `QuizOverlay` where the answer is graded.
+1. ~~**Pokédex/Isotopedex**~~ — **DONE** this session (`src/ui/Isotopedex.ts`,
+   corner button, Seen/Caught cards; `markCaught` wired on correct answers). Nice
+   follow-ups: tap a card to enlarge/flip it; a "NEW!" flash when one is caught;
+   sync to `students/{uid}` (item 3) so the collection follows the student.
 2. Populate the **North Woods** with wild Elementals (currently empty).
 3. Sync each student's Seen/Caught to `students/{uid}` in RTDB (currently only
    local per-browser) — ties into the Pokédex.

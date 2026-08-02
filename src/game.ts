@@ -9,6 +9,10 @@ import LibraryScene from "./Scenes/LibraryScene";
 import WoodsScene from "./Scenes/WoodsScene";
 import { ensureSignedIn } from "./data/auth";
 import { loadQuestionBank } from "./data/questionSource";
+import { initIsotopedex } from "./ui/Isotopedex";
+
+// Mount the persistent Isotopedex corner button (independent of Phaser scenes).
+initIsotopedex();
 
 // If Firebase is configured: sign the student in anonymously, then pull the live
 // question bank. If not (or on any error), the game just keeps the local seed.
@@ -27,6 +31,9 @@ import { loadQuestionBank } from "./data/questionSource";
 const config = {
     type: Phaser.AUTO,
     backgroundColor: '#ffffff',
+    // Crisp upscaling of the pixel art now that FIT stretches the canvas to fill
+    // an iPad screen (default linear filtering would blur it).
+    pixelArt: true,
     scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene, WoodsScene],
     plugins: {
         scene: [
@@ -39,6 +46,10 @@ const config = {
     },
     scale: {
         parent: 'phaser-game',
+        // FIT scales the 600×600 game up to fill the device screen while keeping
+        // its aspect ratio — on an iPad the fixed box would otherwise sit tiny
+        // in the middle. CENTER_BOTH keeps it centred within any letterboxing.
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: 600,
         height: 600

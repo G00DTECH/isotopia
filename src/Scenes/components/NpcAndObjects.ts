@@ -17,6 +17,13 @@ export class NpcsAndObjects {
     container!: Phaser.GameObjects.Container;
     interactionCounter: integer = 0;
     facingDirection?: Direction;
+    // When true, this object fires its action as soon as the player comes to
+    // rest within one tile of it — no key press (mobile-first, see interaction()).
+    // Elementals set this; doors handle their own step-on logic in Door.ts.
+    proximityTrigger: boolean = false;
+    // Re-arms only once the player has stepped back out of range, so closing a
+    // quiz while still standing next to the Elemental won't instantly reopen it.
+    armed: boolean = true;
 
     protected action: Function = (): void => {
         // code here for default action
@@ -57,82 +64,58 @@ export class NpcsAndObjects {
         scene.npcsAndObjectsArray.push(this)
     }
 
-    // For interacting with NPCs and objects and then executing the action set in the associated NPC
+    // Proximity-based interaction (mobile-first — no interact key). When the
+    // player comes to rest within one tile of a proximity-triggering object
+    // (an Elemental), its action fires automatically. This is the touch
+    // equivalent of walking into a wild Pokémon; it works for both tap-to-move
+    // and arrow keys since it only listens for the player's movement stopping.
     static interaction(
         scene: GameScene
     ): void {
-        const movementStartListener = scene.gridEngine.movementStarted()
-        const movementStopListener = scene.gridEngine.movementStopped()
-        const directionListener = scene.gridEngine.directionChanged()
-
         // prevents doors from being used repeatedly after switching the scene/room
         scene.events.addListener('wake', () => {
             scene.characterMoved = false
         })
 
-        movementStopListener.subscribe((observer) => {
+        scene.gridEngine.movementStopped().subscribe((observer) => {
+            if (observer.charId !== scene.playerName) return
             scene.gridEngine.setSpeed(scene.playerName, 4)
-            this.interactionChange(scene)
+            this.checkProximity(scene)
         })
 
-        // Doesn't even need to rotate / change the direction.
-        directionListener.subscribe((observer) => {
-            if (observer.charId === scene.playerName) {
-                this.interactionChange(scene)
-                // object movement
-                if (
-                    !GlobalInfo._gameProgress.inDialogue &&
-                    (
-                        (scene.cursors.up.isDown && observer.direction === Direction.UP) ||
-                        (scene.cursors.left.isDown && observer.direction === Direction.LEFT) ||
-                        (scene.cursors.down.isDown && observer.direction === Direction.DOWN) ||
-                        (scene.cursors.right.isDown && observer.direction === Direction.RIGHT)
-                    )
-                ) {
-                    scene.npcsAndObjectsArray.forEach(object => {
-                        if (
-                            scene.gridEngine.getFacingPosition(scene.playerName).x === scene.gridEngine.getPosition(object.name.toString()).x &&
-                            scene.gridEngine.getFacingPosition(scene.playerName).y === scene.gridEngine.getPosition(object.name.toString()).y &&
-                            !object.name.toUpperCase().startsWith('NPC')
-                        ) {
-                            object.action(scene, object.name)
-                        }
-                    })
-                }
-            }
-        })
-
-        movementStartListener.subscribe((observer) => {
-
-            scene.interactionKey.removeAllListeners('down')
-            scene.cursors.up.off('down')
-            scene.cursors.left.off('down')
-            scene.cursors.down.off('down')
-            scene.cursors.right.off('down')
-        })
-
-        GlobalInfo.on('inDialogue', (value: boolean) => {
-            this.interactionChange(scene)
+        // A quiz closing also resets speed and re-checks (in case the player is
+        // still adjacent after stepping away and back).
+        GlobalInfo.on('inDialogue', () => {
+            this.checkProximity(scene)
         })
     }
 
-    private static interactionChange(
+    // Fire the action of any armed proximity object within one tile of the
+    // player. Objects re-arm only once the player moves back out of range.
+    private static checkProximity(
         scene: GameScene
     ): void {
-        scene.interactionKey.removeAllListeners('down')
-        if (!GlobalInfo._gameProgress.inDialogue) {
-            scene.npcsAndObjectsArray.forEach(object => {
-                if (
-                    scene.gridEngine.getFacingPosition(scene.playerName).x === scene.gridEngine.getPosition(object.name.toString()).x &&
-                    scene.gridEngine.getFacingPosition(scene.playerName).y === scene.gridEngine.getPosition(object.name.toString()).y &&
-                    object.name.toUpperCase().startsWith('NPC')
-                ) {
-                    scene.interactionKey.once('down', () => {
-                        object.action(scene, object.name)
-                    })
+        const player = scene.gridEngine.getPosition(scene.playerName)
+
+        scene.npcsAndObjectsArray.forEach(object => {
+            if (!object.proximityTrigger) return
+
+            const pos = scene.gridEngine.getPosition(object.name)
+            // Chebyshev distance: the 8 tiles around the player count as "one
+            // tile away" so a diagonal stop (from CLOSEST_REACHABLE) still fires.
+            const dist = Math.max(Math.abs(pos.x - player.x), Math.abs(pos.y - player.y))
+
+            if (dist <= 1) {
+                if (object.armed && !GlobalInfo._gameProgress.inDialogue) {
+                    object.armed = false
+                    // Turn the dog to face the Elemental it walked up to.
+                    scene.gridEngine.turnTowards(scene.playerName, directionTo(player, pos))
+                    object.action(scene, object.name)
                 }
-            })
-        }
+            } else {
+                object.armed = true
+            }
+        })
     }
 
     // add a character to the GridEngine
@@ -157,6 +140,19 @@ export class NpcsAndObjects {
     }
 }
 
+
+// Direction from tile `from` toward tile `to`, picking the dominant axis.
+function directionTo(
+    from: { x: number, y: number },
+    to: { x: number, y: number }
+): Direction {
+    const dx = to.x - from.x
+    const dy = to.y - from.y
+    if (Math.abs(dx) >= Math.abs(dy)) {
+        return dx >= 0 ? Direction.RIGHT : Direction.LEFT
+    }
+    return dy >= 0 ? Direction.DOWN : Direction.UP
+}
 
 // create a character at the given coordinates on the map and scale it
 export function createCharacterSprite(
