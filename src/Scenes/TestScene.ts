@@ -1,5 +1,6 @@
 import { SceneName } from './enums/SceneNames';
 import { Door } from './components/Door';
+import { drawDoorCue } from './components/DoorCue';
 import { CollisionStrategy } from 'grid-engine';
 import GameScene from "./GameScene"
 import { LayerType } from './enums/LayerType';
@@ -109,12 +110,15 @@ export default class TestScene extends GameScene {
         // Real storefront art over the invisible building footprints.
         BUILDINGS.forEach(b => this.drawBuilding(b))
 
-        // One door per building: step onto the square outside it to enter. The
-        // painted door on the art is the visual cue — no floating label needed.
+        // One door per building: step onto the square outside it (one tile south)
+        // to enter. A glowing "ENTER ▲" pad marks each entrance so new players can
+        // tell buildings are enterable — most Elementals live inside them.
         TOWN_DOORS.forEach(d => {
             new Door({
                 scene: this, xPosition: d.x, yPosition: d.y, nextScene: d.scene
             })
+            const label = d.scene === SceneName.Woods ? 'WOODS' : 'ENTER'
+            drawDoorCue(this, d.x, d.y + 1, label, '▲')
         })
     }
 

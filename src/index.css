@@ -13,9 +13,15 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
+:root {
+    --hud-h: 52px;                 /* reserved strip for the bottom HUD */
+}
+
 #game-container {
     width: 100vw;
-    height: 100vh;
+    /* Sit the game ABOVE the HUD (and the iPad home indicator) instead of behind
+       it, so the bottom of the world stays visible and tappable. */
+    height: calc(100vh - var(--hud-h) - env(safe-area-inset-bottom));
     display: flex;
     justify-content: center;
     align-items: center;
@@ -24,8 +30,13 @@ html, body {
     touch-action: none;
 }
 
+#phaser-game {
+    width: 100%;
+    height: 100%;
+}
 #phaser-game canvas {
     display: block;
+    margin: 0 auto;               /* centre within any FIT letterboxing */
     touch-action: none;
 }
 
@@ -35,19 +46,27 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
+    box-sizing: border-box;
+    height: calc(var(--hud-h) + env(safe-area-inset-bottom));
     display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
+    flex-wrap: nowrap;
+    gap: 16px;
     justify-content: center;
     align-items: center;
-    padding: 8px 14px;
+    padding: 6px 14px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));  /* clear the home indicator */
     background: rgba(16, 32, 58, 0.92);
     color: #eef4ff;
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 13px;
     border-top: 2px solid #ffd166;
     z-index: 900;
+    /* If the tips are too wide for a narrow iPad/split-view, scroll them
+       horizontally rather than wrapping over the game. */
+    overflow-x: auto;
+    white-space: nowrap;
 }
+#hud > span { flex: 0 0 auto; }
 #hud .hud-title { color: #ffd166; font-weight: bold; }
 #hud b { color: #ffd166; }
 
@@ -106,6 +125,7 @@ html, body {
 }
 
 .quiz-card {
+    position: relative;
     width: min(520px, 92vw);
     background: #10203a;
     color: #eef4ff;
@@ -115,7 +135,28 @@ html, body {
     padding: 18px 20px 20px;
 }
 
-.quiz-monster { font-size: 18px; margin-bottom: 2px; }
+/* Back out of a quiz you didn't mean to start (no keyboard on iPad). */
+.quiz-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    font: inherit;
+    font-size: 18px;
+    color: #eef4ff;
+    background: #1c3358;
+    border: 2px solid #3f5f8f;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.quiz-x:active { transform: scale(0.94); }
+
+/* ✓ / ✗ so right-vs-wrong isn't signalled by colour alone. */
+.quiz-mark { float: right; font-weight: bold; font-size: 18px; }
+
+.quiz-monster { font-size: 18px; margin-bottom: 2px; padding-right: 44px; }
 .quiz-monster strong { color: #ffd166; }
 .quiz-element {
     font-size: 12px;
@@ -169,13 +210,40 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ---- "Leave building" button (interiors only) ---- */
+.leave-button {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: calc(12px + env(safe-area-inset-left));
+    z-index: 950;                 /* above HUD, below the quiz overlay */
+    display: none;                /* shown only while inside a building */
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 10px 16px;
+    color: #10203a;
+    background: #ffd166;
+    border: 3px solid #fff;
+    border-radius: 24px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s ease;
+}
+.leave-button:hover { transform: translateY(-1px); }
+.leave-button:active { transform: scale(0.96); }
+.leave-arrow { font-size: 18px; line-height: 1; }
+
 /* ================= Isotopedex ================= */
 
 /* ---- Corner button (a mini Pokédex device) ---- */
 .dex-button {
     position: fixed;
-    top: 12px;
-    right: 12px;
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
     z-index: 950;                 /* above HUD (900), below the quiz (1000) */
     width: 56px;
     height: 60px;

@@ -47,6 +47,7 @@ export async function openQuiz(elementId: string): Promise<void> {
     overlay.className = 'quiz-overlay';
     overlay.innerHTML = `
         <div class="quiz-card">
+            <button class="quiz-x" aria-label="Close without answering">✕</button>
             <div class="quiz-monster">A wild <strong>${element.monster}</strong> appeared!</div>
             <div class="quiz-element">${element.symbol} · ${element.name}</div>
             <div class="quiz-prompt">${question.prompt}</div>
@@ -75,15 +76,23 @@ export async function openQuiz(elementId: string): Promise<void> {
         answered = true;
         const correct = index === question!.correctIndex;
 
+        // Mark answers with a glyph as well as colour, so the correct/wrong
+        // signal doesn't rely on green-vs-red (colour-blind students).
         buttons.forEach((b, i) => {
             b.disabled = true;
-            if (i === question!.correctIndex) b.classList.add('correct');
-            else if (i === index) b.classList.add('wrong');
+            if (i === question!.correctIndex) {
+                b.classList.add('correct');
+                b.insertAdjacentHTML('beforeend', ' <span class="quiz-mark">✓</span>');
+            } else if (i === index) {
+                b.classList.add('wrong');
+                b.insertAdjacentHTML('beforeend', ' <span class="quiz-mark">✗</span>');
+            }
         });
 
+        const answerText = question!.choices[question!.correctIndex];
         feedbackEl.textContent = correct
             ? `Caught it! ${element!.monster} joined your Isotopedex. 🎉`
-            : `Not quite — the answer is highlighted in green. ${element!.monster} was recorded as Seen; catch it next time!`;
+            : `So close! The answer is "${answerText}" ✓. You've spotted ${element!.monster} — walk back to try again!`;
         feedbackEl.classList.add(correct ? 'ok' : 'no');
 
         // A correct answer catches the Elemental (adds its card); any encounter
@@ -112,6 +121,10 @@ export async function openQuiz(elementId: string): Promise<void> {
     }
 
     continueBtn.addEventListener('click', close);
+    // ✕ lets a student back out of a quiz they didn't mean to start (iPads have
+    // no keyboard, so this is the only non-answer way out). The Elemental stays
+    // de-armed until they step away, so it won't instantly reopen.
+    (overlay.querySelector('.quiz-x') as HTMLButtonElement).addEventListener('click', close);
     document.addEventListener('keydown', onKey);
     document.body.appendChild(overlay);
 }

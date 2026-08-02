@@ -3,10 +3,40 @@
 A running summary of what was built and where things stand, so work can resume
 after clearing/compacting the conversation.
 
-## Latest session (2026-08) — mobile movement + Isotopedex
+## Latest session (2026-08) — mobile movement, Isotopedex, exit UX, UX-review fixes
 The students use **iPads**, so this pass made the game touch-only, fixed the one
-thing that made it unplayable without a keyboard, and built the **Isotopedex**
-(the creature-collection screen). **Not yet committed/pushed.**
+thing that made it unplayable without a keyboard, built the **Isotopedex**
+(the creature-collection screen), fixed **building exit/entry UX**, and applied
+the **red-blocker fixes** from a 3-agent mobile UX review.
+
+### Building entry/exit UX + UX-review blocker fixes
+- **Visible door pads.** Entrances/exits were invisible step-on tiles. New
+  `src/Scenes/components/DoorCue.ts` `drawDoorCue()` draws a pulsing gold mat +
+  "ENTER ▲" / "EXIT ▼" / "WOODS ▲" label on each door's pad. Town doors get
+  ENTER cues (`TestScene.create`), interiors get an EXIT cue (`InteriorScene`).
+- **"Leave" button** (`src/ui/LeaveButton.ts`) — a one-tap DOM button shown only
+  inside a building (top-left), wired to return to town. Shown on interior
+  create/wake, hidden on sleep/shutdown.
+- **Quiz is no longer a trap:** added a ✕ close button to `QuizOverlay` so a
+  student can back out of an accidentally-triggered quiz (iPads have no keyboard;
+  before, the only way out was to answer). The Elemental stays de-armed until you
+  step away, so it won't instantly reopen.
+- **Colour-blind fix:** quiz answers now get a ✓/✗ glyph, not just green/red, and
+  wrong-answer feedback names the correct answer text instead of "the green one".
+- **HUD fixed for iPad:** was `bottom:0` and the canvas sat *behind* it; now the
+  game container reserves `--hud-h` + `env(safe-area-inset-bottom)` so the world
+  sits above the HUD and the home indicator. DEX/Leave buttons got
+  `env(safe-area-inset-*)`. HUD copy corrected (it referenced SHOP/LAB/HOME that
+  don't exist) and trimmed to a single non-wrapping strip.
+- **Stray-tap guard:** `clickToMove` ignores pointerdowns whose target isn't the
+  game canvas, so a near-miss beside a DOM button no longer walks the dog off.
+- **Deferred (not done this pass):** first-run tutorial, "try again" button,
+  seen/caught count relabel, terminology cleanup (use "Elemental" everywhere —
+  NOT "Elemonster"), empty-woods signage, landscape letterboxing, focus rings,
+  audio-context unlock, Door `movementStopped` subscription leak. See the UX
+  review notes; these were the "yellow/green" tier.
+
+### Isotopedex (the "Pokédex")
 
 ### Isotopedex (the "Pokédex")
 - **Corner button** (`#dex-button`, top-right, styled like a little red Pokédex

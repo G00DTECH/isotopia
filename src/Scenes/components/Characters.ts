@@ -14,6 +14,13 @@ export function clickToMove(
             return
         }
 
+        // Ignore taps that landed on a DOM UI element over the canvas (the DEX /
+        // Leave / HUD buttons) so a near-miss doesn't send the dog wandering off.
+        const target = pointer.event?.target as Element | undefined
+        if (target && target !== scene.game.canvas) {
+            return
+        }
+
         // pointer.worldX/Y already account for camera scroll + zoom.
         const targetTile = {
             x: scene.map.worldToTileX(pointer.worldX),

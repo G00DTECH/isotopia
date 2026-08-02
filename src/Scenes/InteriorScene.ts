@@ -5,6 +5,8 @@ import GameScene from './GameScene';
 import { LayerType } from './enums/LayerType';
 import { Door } from './components/Door';
 import { SceneName } from './enums/SceneNames';
+import { showLeaveButton, hideLeaveButton } from '../ui/LeaveButton';
+import { drawDoorCue } from './components/DoorCue';
 
 // A building interior you reach from the town. The room art is a single Luna
 // Town background image; a shared 16x16 collision grid (interior_room.json)
@@ -76,12 +78,22 @@ export abstract class InteriorScene extends GameScene {
             .setDepth(-100);
 
         // EXIT back to town. The room's walkable floor is above the exit, so the
-        // entrance pad is the tile to the north. No floating label — step onto
-        // the pad by the door to leave.
+        // entrance pad is the tile to the north — step onto it to leave.
         new Door({
             scene: this, xPosition: InteriorScene.EXIT.x, yPosition: InteriorScene.EXIT.y,
             nextScene: SceneName.Test, entryOffset: { dx: 0, dy: -1 },
         });
+
+        // Two ways out, both obvious (the invisible step-on pad alone confused
+        // new players): (1) a glowing in-world "EXIT ▼" mat over the pad (the exit
+        // door sits below it), and (2) a one-tap DOM "Leave" button, shown only
+        // while inside a building.
+        drawDoorCue(this, InteriorScene.EXIT.x, InteriorScene.EXIT.y - 1, 'EXIT', '▼');
+        const leave = (): void => this.switch(SceneName.Test);
+        showLeaveButton(leave);
+        this.events.on('wake', () => showLeaveButton(leave));
+        this.events.on('sleep', () => hideLeaveButton());
+        this.events.on('shutdown', () => hideLeaveButton());
     }
 
     createNpcs(): void {
