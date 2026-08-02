@@ -25,21 +25,18 @@ const TOWN_DOORS: { x: number; y: number; scene: SceneName; label: string }[] = 
     { x: 5,  y: 20, scene: SceneName.Auto,      label: 'ENTER ▶' },
 ];
 
-// Only AUTO still needs a painted plaque — the other four storefronts now use
-// real building art (drawn in create()) that already has its name on the sign.
-const TOWN_SIGNS: { text: string; cx: number; cy: number }[] = [
-    { text: 'AUTO',      cx: 80,  cy: 280 },
-];
-
 // Real building art overlaid on the (now invisible-collision) storefront
 // footprints from tools/gen_town.py. Each image is anchored bottom-centre over
-// its door tile and scaled so its width spans `w` tiles; keep in sync with the
-// PLACEMENTS there. AUTO has no art yet, so it keeps its tiled facade.
-const BUILDINGS: { key: string; ox: number; oy: number; w: number; h: number; doorX: number }[] = [
-    { key: 'bld_hardware', ox: 1,  oy: 1, w: 8, h: 8, doorX: 5 },
-    { key: 'bld_grocery',  ox: 11, oy: 1, w: 8, h: 8, doorX: 15 },
-    { key: 'bld_library',  ox: 21, oy: 1, w: 7, h: 8, doorX: 24 },
-    { key: 'bld_home',     ox: 30, oy: 1, w: 8, h: 8, doorX: 34 },
+// its door tile and scaled so its width spans `w * scale` tiles; every storefront
+// has its name painted on, so no separate sign plaques are needed. `scale` bumps
+// the wide storefronts 20% so they don't look small beside the square hardware
+// store — keep it in sync with SCALE in gen_town.py.
+const BUILDINGS: { key: string; oy: number; h: number; w: number; doorX: number; scale: number }[] = [
+    { key: 'bld_hardware', oy: 1,  h: 8, w: 8, doorX: 5,  scale: 1.0 },
+    { key: 'bld_grocery',  oy: 1,  h: 8, w: 8, doorX: 15, scale: 1.2 },
+    { key: 'bld_library',  oy: 1,  h: 8, w: 7, doorX: 24, scale: 1.2 },
+    { key: 'bld_home',     oy: 1,  h: 8, w: 8, doorX: 34, scale: 1.2 },
+    { key: 'bld_auto',     oy: 13, h: 8, w: 8, doorX: 5,  scale: 1.2 },
 ];
 
 // The decorative lake (matches LAKE in tools/gen_town.py): a rectangle of
@@ -109,9 +106,6 @@ export default class TestScene extends GameScene {
         // Real storefront art over the invisible building footprints.
         BUILDINGS.forEach(b => this.drawBuilding(b))
 
-        // Name plaques over each storefront (covers the reused facade art).
-        TOWN_SIGNS.forEach(s => this.drawSign(s.text, s.cx, s.cy))
-
         // One labelled door per building: walk up to it to enter that room.
         TOWN_DOORS.forEach(d => {
             const door = new Door({
@@ -122,31 +116,16 @@ export default class TestScene extends GameScene {
     }
 
     // Overlay one storefront image: anchored bottom-centre on its door tile and
-    // scaled so the art spans `w` tiles wide (aspect preserved). Depth 1 keeps it
-    // above the ground tiles but below the characters (depth 10), so the dog
-    // walks in front of the shop.
-    private drawBuilding(b: { key: string; ox: number; oy: number; w: number; h: number; doorX: number }): void {
+    // scaled so the art spans `w * scale` tiles wide (aspect preserved). Depth 1
+    // keeps it above the ground tiles but below the characters (depth 10), so the
+    // dog walks in front of the shop.
+    private drawBuilding(b: { key: string; oy: number; h: number; w: number; doorX: number; scale: number }): void {
         const src = this.textures.get(b.key).getSourceImage() as HTMLImageElement
-        const scale = (b.w * 16) / src.width
+        const scale = (b.w * 16 * b.scale) / src.width
         this.add.image((b.doorX + 0.5) * 16, (b.oy + b.h) * 16, b.key)
             .setOrigin(0.5, 1)
             .setScale(scale)
             .setDepth(1)
-    }
-
-    // Draws a navy/gold shop plaque (game palette) centred on a building sign.
-    // The box auto-sizes to the label so long names like "HANNAFORD" fit.
-    private drawSign(text: string, cx: number, cy: number): void {
-        const w = Math.max(62, text.length * 8 + 14), h = 17
-        const g = this.add.graphics().setDepth(500)
-        g.fillStyle(0x10203a, 1).fillRoundedRect(cx - w / 2, cy - h / 2, w, h, 3)
-        g.lineStyle(1, 0xffd166, 1).strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, 3)
-        this.add.text(cx, cy - 1, text, {
-            fontFamily: 'monospace',
-            fontSize: '11px',
-            fontStyle: 'bold',
-            color: '#ffd166',
-        }).setOrigin(0.5).setDepth(501)
     }
 
     // Paints the lake: rippled blue fill over the blocking water cells, plus a
