@@ -218,14 +218,14 @@ export default abstract class GameScene extends Phaser.Scene {
     }
 
     // Spawn one Elemental at a tile: real character art if it has any, otherwise
-    // the tinted placeholder NPC. Walking up + pressing E opens its quiz. A
-    // floating element-symbol label makes each one identifiable.
+    // the tinted placeholder NPC. Walking up + pressing E opens its quiz. No
+    // floating label — the art speaks for itself (labels broke immersion).
     spawnElemental(elementId: string, x: number, y: number): void {
         const element = getElement(elementId)
         if (!element) return
         const artKey = elementalArtKey(elementId)
 
-        const monster = new Npc({
+        new Npc({
             scene: this,
             xPosition: x,
             yPosition: y,
@@ -236,13 +236,12 @@ export default abstract class GameScene extends Phaser.Scene {
             // Real art is a single frame → no walking animation mapping.
             walkingAnimationMapping: artKey ? undefined : 0,
         })
-        this.addFloatingLabel(monster.name, element.symbol, '#ffffff')
     }
 
     // A flavor NPC with real art that just wanders the map — no quiz, no plot.
     // Used for Neonu Reeves, the disco bug who simply exists. Single-frame art,
     // so no walking-animation mapping (see Npc.addCharacter).
-    spawnWanderingNpc(textureKey: string, x: number, y: number, label: string): void {
+    spawnWanderingNpc(textureKey: string, x: number, y: number): void {
         const npc = new Npc({
             scene: this,
             xPosition: x,
@@ -250,23 +249,8 @@ export default abstract class GameScene extends Phaser.Scene {
             texture: textureKey,
             scale: ELEMENTAL_ART_SCALE,
         })
-        this.addFloatingLabel(npc.name, label, '#ff66cc')
         // delay(ms) between hops, wandering within `radius` tiles of the start.
         this.gridEngine.moveRandomly(npc.name, 2000, 2)
-    }
-
-    // Small always-on text label above a character or door.
-    addFloatingLabel(charName: string, text: string, color: string): void {
-        const sprite = this.gridEngine.getSprite(charName)
-        if (!sprite) return
-        const top = sprite.getTopCenter()
-        this.add.text(top.x, top.y - 2, text, {
-            fontFamily: 'monospace',
-            fontSize: '9px',
-            color,
-            backgroundColor: '#000000aa',
-            padding: { x: 2, y: 1 },
-        }).setOrigin(0.5, 1).setDepth(9999)
     }
 
     // load map resources
