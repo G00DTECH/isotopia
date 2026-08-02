@@ -15,6 +15,20 @@ prints the door tiles it computed to make that easy.
 Run:  python3 tools/gen_town.py   (writes src/assets/tilemap/test_map.json)
 """
 import json, os
+from PIL import Image
+
+# NEW_ART venues map to a building image; the collision block is bottom-anchored
+# and only as tall as the scaled art (so there's no invisible wall of grass above
+# short, wide storefronts). Art is scaled so its width spans the footprint width.
+ART_FILE = {'hardware': 'hardware', 'hannaford': 'grocery',
+            'library': 'library', 'home': 'home'}
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
+def art_tiles_tall(name, w_tiles):
+    im = Image.open(os.path.join(_HERE, '..', 'src', 'assets', 'buildings',
+                                 ART_FILE[name] + '.png'))
+    scaled_h = (w_tiles * 16) * im.height / im.width
+    return max(1, round(scaled_h / 16))
 
 SHEET_COLS = 141                      # modern_exterior.png is 141 tiles wide
 def gid(col, row): return row * SHEET_COLS + col + 1
@@ -26,6 +40,15 @@ PATH  = gid(17, 1)                    # grey cobblestone
 # blue "LAKE" graphic drawn in TestScene, so the exact tile doesn't matter — it
 # just has to be a GID used nowhere else (collision is per-GID and global).
 WATER = gid(0, 50)
+
+# Second tileset: blank16.png (a 2-tile transparent strip; tile 1 collides).
+# Buildings that now use real overlay art (drawn in TestScene) stamp this
+# invisible-but-solid tile instead of facade art, so the old modern_exterior
+# facades don't peek out from behind the new images. AUTO has no art yet, so it
+# keeps its tiled facade.
+BLANK_FIRST = SHEET_COLS * 118 + 1        # firstgid after modern_exterior (141x118)
+BLANK_SOLID = BLANK_FIRST + 1             # blank16 tile id 1 = transparent + ge_collide
+NEW_ART = {'hardware', 'hannaford', 'library', 'home'}
 
 # --- reused facade models copied from the sheet: (sheet_col0, row0, w, h, door_local_col)
 FACADES = {
@@ -56,10 +79,14 @@ def put(layer, tx, ty, g):
     if 0 <= tx < W and 0 <= ty < H:
         layer[ty * W + tx] = g
 
+# Each venue's door sits at the horizontal centre of its footprint (the building
+# art has a central door), so entry lines up with the picture.
+def door_col_of(ox, w): return ox + w // 2
+
 # ground: grass everywhere, then cobblestone stubs below each door + a plaza.
 for (name, facade, ox, oy) in PLACEMENTS:
     b = FACADES[facade]
-    door_col = ox + b['door']
+    door_col = door_col_of(ox, b['w'])
     door_row = oy + b['h'] - 1
     for ry in range(door_row + 1, door_row + 3):   # short path stub below each door
         put(floor, door_col, ry, PATH)
@@ -68,14 +95,25 @@ for tx in range(2, 38):               # horizontal walkway across the plaza
 for ry in range(11, 21):              # vertical path linking the AUTO shop to the plaza
     put(floor, 5, ry, PATH)
 
-# buildings: stamp GID blocks; collide everything except the door column
+# buildings: NEW_ART venues stamp an invisible solid block sized to the art and
+# bottom-anchored to the door row (no invisible grass above short storefronts);
+# AUTO still stamps its full modern_exterior facade. Either way the door column
+# stays walkable so the Door object can trigger the switch.
 for (name, facade, ox, oy) in PLACEMENTS:
     b = FACADES[facade]
-    for dy in range(b['h']):
-        for dx in range(b['w']):
-            g = gid(b['sc'] + dx, b['sr'] + dy)
-            put(walls, ox + dx, oy + dy, g)
-            if dx != b['door']:       # door column stays walkable
+    door_col = door_col_of(ox, b['w'])
+    door_row = oy + b['h'] - 1
+    coll_h = art_tiles_tall(name, b['w']) if name in NEW_ART else b['h']
+    top_row = door_row - coll_h + 1
+    for ty in range(top_row, door_row + 1):
+        for tx in range(ox, ox + b['w']):
+            if tx == door_col:        # door column stays walkable
+                continue
+            if name in NEW_ART:
+                put(walls, tx, ty, BLANK_SOLID)
+            else:
+                g = gid(b['sc'] + (tx - ox), b['sr'] + (ty - oy))
+                put(walls, tx, ty, g)
                 collide.add(g)
 
 # trees: decorative; only the trunk row (bottom) blocks
@@ -115,6 +153,13 @@ tilemap = {
         "margin": 0, "spacing": 0, "name": "modern_exterior",
         "tilecount": 141 * 118, "tilewidth": 16, "tileheight": 16,
         "tiles": tileset_tiles,
+    }, {
+        "columns": 2, "firstgid": BLANK_FIRST,
+        "image": "../assets/tiles/blank16.png",
+        "imagewidth": 32, "imageheight": 16,
+        "margin": 0, "spacing": 0, "name": "blank16",
+        "tilecount": 2, "tilewidth": 16, "tileheight": 16,
+        "tiles": [{"id": 1, "properties": [{"name": "ge_collide", "type": "bool", "value": True}]}],
     }],
 }
 
@@ -124,7 +169,7 @@ with open(out, 'w') as f:
     json.dump(tilemap, f)
 
 # door tiles for TestScene wiring (town col,row of each door's bottom tile)
-doors = {name: (ox + FACADES[facade]['door'], oy + FACADES[facade]['h'] - 1)
+doors = {name: (door_col_of(ox, FACADES[facade]['w']), oy + FACADES[facade]['h'] - 1)
          for (name, facade, ox, oy) in PLACEMENTS}
 print("wrote", os.path.relpath(out))
 print("collide gids:", len(collide))

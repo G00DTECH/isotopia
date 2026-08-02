@@ -168,6 +168,9 @@ export function createCharacterSprite(
 ): Phaser.Physics.Arcade.Sprite {
     const sprite: Phaser.Physics.Arcade.Sprite = scene.physics.add.sprite(x, y, texture)
     sprite.scale = scale
+    // Above the building overlay images (depth 1) so the player and NPCs walk in
+    // front of the storefronts instead of being hidden behind them.
+    sprite.setDepth(10)
 
     return sprite
 }
