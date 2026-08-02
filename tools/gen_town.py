@@ -17,20 +17,22 @@ Run:  python3 tools/gen_town.py   (writes src/assets/tilemap/test_map.json)
 import json, os
 from PIL import Image
 
-# Every venue now maps to a building image; the collision block is bottom-anchored
-# and only as tall as the scaled art (so there's no invisible wall of grass above
-# short, wide storefronts). SCALE bumps the wide storefronts up 20% so they don't
-# look small next to the (square) hardware store — keep in sync with TestScene's
-# BUILDINGS `scale`.
+# Every venue maps to a building image (cropped tight to its content). WIDTH_TILES
+# is the building's on-screen width in tiles; the collision block is bottom-anchored
+# to the door row, centred on the door, and only as tall as the scaled art (no
+# invisible wall of grass above short storefronts). The wide storefronts are sized
+# up so they don't look small beside the (square) hardware store — keep in sync
+# with TestScene's BUILDINGS `widthTiles`.
 ART_FILE = {'hardware': 'hardware', 'hannaford': 'grocery', 'library': 'library',
             'home': 'home', 'auto': 'auto'}
-SCALE = {'hardware': 1.0, 'hannaford': 1.2, 'library': 1.2, 'home': 1.2, 'auto': 1.2}
+WIDTH_TILES = {'hardware': 6.3, 'hannaford': 9.8, 'library': 8.6,
+               'home': 9.8, 'auto': 9.8}
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 def art_aspect(name):
     im = Image.open(os.path.join(_HERE, '..', 'src', 'assets', 'buildings',
                                  ART_FILE[name] + '.png'))
-    return im.height / im.width   # tall/wide ratio
+    return im.height / im.width   # tall/wide ratio (cropped = true content)
 
 SHEET_COLS = 141                      # modern_exterior.png is 141 tiles wide
 def gid(col, row): return row * SHEET_COLS + col + 1
@@ -105,9 +107,9 @@ for (name, facade, ox, oy) in PLACEMENTS:
     b = FACADES[facade]
     door_col = door_col_of(ox, b['w'])
     door_row = oy + b['h'] - 1
-    scale = SCALE.get(name, 1.0)
-    coll_w = max(1, round(b['w'] * scale))
-    coll_h = max(1, round(b['w'] * scale * art_aspect(name)))
+    wt = WIDTH_TILES[name]
+    coll_w = max(1, round(wt))
+    coll_h = max(1, round(wt * art_aspect(name)))
     left = door_col - coll_w // 2
     top_row = door_row - coll_h + 1
     for ty in range(top_row, door_row + 1):

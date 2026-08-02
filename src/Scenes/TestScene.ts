@@ -25,18 +25,18 @@ const TOWN_DOORS: { x: number; y: number; scene: SceneName; label: string }[] = 
     { x: 5,  y: 20, scene: SceneName.Auto,      label: 'ENTER ▶' },
 ];
 
-// Real building art overlaid on the (now invisible-collision) storefront
-// footprints from tools/gen_town.py. Each image is anchored bottom-centre over
-// its door tile and scaled so its width spans `w * scale` tiles; every storefront
-// has its name painted on, so no separate sign plaques are needed. `scale` bumps
-// the wide storefronts 20% so they don't look small beside the square hardware
-// store — keep it in sync with SCALE in gen_town.py.
-const BUILDINGS: { key: string; oy: number; h: number; w: number; doorX: number; scale: number }[] = [
-    { key: 'bld_hardware', oy: 1,  h: 8, w: 8, doorX: 5,  scale: 1.0 },
-    { key: 'bld_grocery',  oy: 1,  h: 8, w: 8, doorX: 15, scale: 1.2 },
-    { key: 'bld_library',  oy: 1,  h: 8, w: 7, doorX: 24, scale: 1.2 },
-    { key: 'bld_home',     oy: 1,  h: 8, w: 8, doorX: 34, scale: 1.2 },
-    { key: 'bld_auto',     oy: 13, h: 8, w: 8, doorX: 5,  scale: 1.2 },
+// Real building art (cropped tight to its content) overlaid on the invisible
+// storefront footprints from tools/gen_town.py. Each image is anchored
+// bottom-centre over its door tile and scaled so it spans `widthTiles` tiles
+// wide; every storefront has its name painted on, so no sign plaques are needed.
+// The wide storefronts are sized up so they don't look small beside the square
+// hardware store — keep widthTiles in sync with WIDTH_TILES in gen_town.py.
+const BUILDINGS: { key: string; oy: number; h: number; doorX: number; widthTiles: number }[] = [
+    { key: 'bld_hardware', oy: 1,  h: 8, doorX: 5,  widthTiles: 6.3 },
+    { key: 'bld_grocery',  oy: 1,  h: 8, doorX: 15, widthTiles: 9.8 },
+    { key: 'bld_library',  oy: 1,  h: 8, doorX: 24, widthTiles: 8.6 },
+    { key: 'bld_home',     oy: 1,  h: 8, doorX: 34, widthTiles: 9.8 },
+    { key: 'bld_auto',     oy: 13, h: 8, doorX: 5,  widthTiles: 9.8 },
 ];
 
 // The decorative lake (matches LAKE in tools/gen_town.py): a rectangle of
@@ -116,12 +116,12 @@ export default class TestScene extends GameScene {
     }
 
     // Overlay one storefront image: anchored bottom-centre on its door tile and
-    // scaled so the art spans `w * scale` tiles wide (aspect preserved). Depth 1
+    // scaled so the art spans `widthTiles` tiles wide (aspect preserved). Depth 1
     // keeps it above the ground tiles but below the characters (depth 10), so the
     // dog walks in front of the shop.
-    private drawBuilding(b: { key: string; oy: number; h: number; w: number; doorX: number; scale: number }): void {
+    private drawBuilding(b: { key: string; oy: number; h: number; doorX: number; widthTiles: number }): void {
         const src = this.textures.get(b.key).getSourceImage() as HTMLImageElement
-        const scale = (b.w * 16 * b.scale) / src.width
+        const scale = (b.widthTiles * 16) / src.width
         this.add.image((b.doorX + 0.5) * 16, (b.oy + b.h) * 16, b.key)
             .setOrigin(0.5, 1)
             .setScale(scale)
