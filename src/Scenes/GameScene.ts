@@ -239,6 +239,22 @@ export default abstract class GameScene extends Phaser.Scene {
         this.addFloatingLabel(monster.name, element.symbol, '#ffffff')
     }
 
+    // A flavor NPC with real art that just wanders the map — no quiz, no plot.
+    // Used for Neonu Reeves, the disco bug who simply exists. Single-frame art,
+    // so no walking-animation mapping (see Npc.addCharacter).
+    spawnWanderingNpc(textureKey: string, x: number, y: number, label: string): void {
+        const npc = new Npc({
+            scene: this,
+            xPosition: x,
+            yPosition: y,
+            texture: textureKey,
+            scale: ELEMENTAL_ART_SCALE,
+        })
+        this.addFloatingLabel(npc.name, label, '#ff66cc')
+        // delay(ms) between hops, wandering within `radius` tiles of the start.
+        this.gridEngine.moveRandomly(npc.name, 2000, 2)
+    }
+
     // Small always-on text label above a character or door.
     addFloatingLabel(charName: string, text: string, color: string): void {
         const sprite = this.gridEngine.getSprite(charName)

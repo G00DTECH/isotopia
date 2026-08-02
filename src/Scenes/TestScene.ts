@@ -87,6 +87,8 @@ export default class TestScene extends GameScene {
             }
         )
         this.loadElementalArt(MONSTER_SPAWNS.map(s => s.elementId))
+        // Neonu Reeves, the disco bug — a flavor NPC, not an Elemental.
+        this.load.image('neonu_reeves', '../assets/elementals/neonu-reeves.png')
     }
 
     create(): void {
@@ -147,6 +149,9 @@ export default class TestScene extends GameScene {
         // One Elemental per outdoor spawn — real art if it has any, else a tinted
         // placeholder. Face it and press E to start its quiz (see spawnElemental).
         MONSTER_SPAWNS.forEach(spawn => this.spawnElemental(spawn.elementId, spawn.x, spawn.y));
+
+        // Neonu Reeves grooves around the plaza. No quiz — he just exists.
+        this.spawnWanderingNpc('neonu_reeves', 16, 17, 'Neonu ♪');
     }
 
     update(): void {
