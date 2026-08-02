@@ -23,6 +23,9 @@ const TOWN_DOORS: { x: number; y: number; scene: SceneName }[] = [
     { x: 24, y: 8,  scene: SceneName.Library },
     { x: 34, y: 8,  scene: SceneName.Home },
     { x: 5,  y: 20, scene: SceneName.Auto },
+    // North trail out of town → the woods & meadow (walk up the gap between the
+    // hardware and grocery stores). Pad is the tile just south, like any door.
+    { x: 9,  y: 0,  scene: SceneName.Woods },
 ];
 
 // Real building art (cropped tight to its content) overlaid on the invisible

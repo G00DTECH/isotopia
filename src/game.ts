@@ -6,6 +6,7 @@ import HardwareScene from "./Scenes/HardwareScene";
 import HannafordScene from "./Scenes/HannafordScene";
 import AutoScene from "./Scenes/AutoScene";
 import LibraryScene from "./Scenes/LibraryScene";
+import WoodsScene from "./Scenes/WoodsScene";
 import { ensureSignedIn } from "./data/auth";
 import { loadQuestionBank } from "./data/questionSource";
 
@@ -26,7 +27,7 @@ import { loadQuestionBank } from "./data/questionSource";
 const config = {
     type: Phaser.AUTO,
     backgroundColor: '#ffffff',
-    scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene],
+    scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene, WoodsScene],
     plugins: {
         scene: [
             {

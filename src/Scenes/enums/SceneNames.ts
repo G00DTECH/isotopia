@@ -4,5 +4,6 @@ export enum SceneName {
     Hardware = 'hardware',
     Hannaford = 'hannaford',
     Auto = 'auto',
-    Library = 'library'
+    Library = 'library',
+    Woods = 'woods'
 }

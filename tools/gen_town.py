@@ -71,7 +71,9 @@ PLACEMENTS = [
 ]
 # tree model: 2 wide x 3 tall, trunk on bottom row
 TREE = dict(sc=16, sr=3, w=2, h=3)
-TREE_SPOTS = [(9, 11), (19, 11), (38, 3), (12, 21), (19, 21)]
+# (col 9 is kept clear for the north trail out of town, so the old (9,11) tree
+# moved west to (2,12).)
+TREE_SPOTS = [(2, 12), (19, 11), (38, 3), (12, 21), (19, 21)]
 # lake: a rectangular pond in the lower-right, drawn blue in TestScene
 LAKE = dict(x=24, y=15, w=14, h=7)
 
@@ -98,6 +100,8 @@ for tx in range(2, 38):               # horizontal walkway across the plaza
     put(floor, tx, 11, PATH)
 for ry in range(11, 21):              # vertical path linking the AUTO shop to the plaza
     put(floor, 5, ry, PATH)
+for ry in range(1, 11):               # north trail: up the hardware/grocery gap to the woods
+    put(floor, 9, ry, PATH)
 
 # buildings: stamp an invisible solid block sized to the (scaled) art and
 # bottom-anchored to the door row — no invisible grass above short storefronts —
