@@ -30,11 +30,29 @@ the **red-blocker fixes** from a 3-agent mobile UX review.
   don't exist) and trimmed to a single non-wrapping strip.
 - **Stray-tap guard:** `clickToMove` ignores pointerdowns whose target isn't the
   game canvas, so a near-miss beside a DOM button no longer walks the dog off.
-- **Deferred (not done this pass):** first-run tutorial, "try again" button,
-  seen/caught count relabel, terminology cleanup (use "Elemental" everywhere —
-  NOT "Elemonster"), empty-woods signage, landscape letterboxing, focus rings,
-  audio-context unlock, Door `movementStopped` subscription leak. See the UX
-  review notes; these were the "yellow/green" tier.
+### Yellow + green UX-review items (all done, same session)
+The "should improve / nice-to-have" tiers from the review, now implemented:
+- **First-run tutorial** — `src/ui/Intro.ts`: a "how to play" card shown on every
+  load (no persistence — shared classroom iPads greet each student), plus a
+  persistent **"?" help button** (bottom-left) to reopen it. Mounted from
+  `game.ts` `initIntro()`. Freezes the dog (`inDialogue`) while open.
+- **"Try again" button** on wrong quiz answers (`QuizOverlay`) — reopens a fresh
+  question for the same Elemental without walking away. Wrong-answer copy softened.
+- **Seen/Caught counts** — header now reads "caught · **discovered**" (the two
+  were identical because a catch also marks seen; "discovered" reads honestly).
+- **Terminology** — generic creature is "Elemental" everywhere (the copy agent's
+  "Elemonster" suggestion was rejected: it contradicts the de-scary rename).
+- **Empty North Woods** — `WoodsScene` now has a "Wild Elementals coming soon!"
+  sign + a "TOWN ▼" cue on its exit, so it reads as WIP not broken.
+- **Landscape** — game resolution is now **800×600 (4:3)** to match the iPad, so
+  FIT barely letterboxes; interiors bump camera zoom to fill the wider view
+  (`InteriorScene`: `zoom = gameSize.width / map.widthInPixels`). **Verify on a
+  real iPad** — this is the one change most worth eyeballing on-device.
+- **A11y / polish** — `:focus-visible` rings on all buttons; `.dex-close`→44px and
+  wider quiz-choice gaps; `alt`/`aria-label` on dex art; bigger dex card text;
+  "👁 Seen" badge de-emojied to "Seen"; audio unlock on first tap (`GameScene`);
+  Door + interaction `movementStopped` subscriptions now unsubscribe on scene
+  shutdown, and proximity checks skip inactive scenes.
 
 ### Isotopedex (the "Pokédex")
 

@@ -1,5 +1,5 @@
-// DOM-based multiple-choice quiz modal shown when the dog trainer talks to an
-// Elemonster. Rendered as an HTML overlay on top of the Phaser canvas so it's
+// DOM-based multiple-choice quiz modal shown when the dog trainer walks up to an
+// Elemental. Rendered as an HTML overlay on top of the Phaser canvas so it's
 // easy to style and read on a classroom projector.
 
 import GlobalInfo from '../GlobalInfo';
@@ -53,12 +53,16 @@ export async function openQuiz(elementId: string): Promise<void> {
             <div class="quiz-prompt">${question.prompt}</div>
             <div class="quiz-choices"></div>
             <div class="quiz-feedback"></div>
-            <button class="quiz-continue" hidden>Continue ▶</button>
+            <div class="quiz-actions">
+                <button class="quiz-retry" hidden>↻ Try again</button>
+                <button class="quiz-continue" hidden>Continue ▶</button>
+            </div>
         </div>`;
 
     const choicesEl = overlay.querySelector('.quiz-choices') as HTMLDivElement;
     const feedbackEl = overlay.querySelector('.quiz-feedback') as HTMLDivElement;
     const continueBtn = overlay.querySelector('.quiz-continue') as HTMLButtonElement;
+    const retryBtn = overlay.querySelector('.quiz-retry') as HTMLButtonElement;
 
     const buttons: HTMLButtonElement[] = question.choices.map((choice, i) => {
         const btn = document.createElement('button');
@@ -92,15 +96,19 @@ export async function openQuiz(elementId: string): Promise<void> {
         const answerText = question!.choices[question!.correctIndex];
         feedbackEl.textContent = correct
             ? `Caught it! ${element!.monster} joined your Isotopedex. 🎉`
-            : `So close! The answer is "${answerText}" ✓. You've spotted ${element!.monster} — walk back to try again!`;
+            : `So close! The answer is "${answerText}" ✓. Tap Try again to catch ${element!.monster}!`;
         feedbackEl.classList.add(correct ? 'ok' : 'no');
 
         // A correct answer catches the Elemental (adds its card); any encounter
         // at least counts it as Seen (spec §4.2). markCaught also marks it seen.
-        if (correct) markCaught(elementId);
-        else markSeen(elementId);
+        if (correct) {
+            markCaught(elementId);
+        } else {
+            markSeen(elementId);
+            retryBtn.hidden = false;   // let them retry without walking away
+        }
         continueBtn.hidden = false;
-        continueBtn.focus();
+        (correct ? continueBtn : retryBtn).focus();
     }
 
     function close(): void {
@@ -121,6 +129,9 @@ export async function openQuiz(elementId: string): Promise<void> {
     }
 
     continueBtn.addEventListener('click', close);
+    // Try again: reopen a fresh question for the same Elemental (a wrong answer
+    // already recorded it as Seen; getQuestion picks a new one).
+    retryBtn.addEventListener('click', () => { close(); void openQuiz(elementId); });
     // ✕ lets a student back out of a quiz they didn't mean to start (iPads have
     // no keyboard, so this is the only non-answer way out). The Elemental stays
     // de-armed until they step away, so it won't instantly reopen.

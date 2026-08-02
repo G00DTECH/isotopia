@@ -54,7 +54,7 @@ export function openIsotopedex(): void {
             <div class="dex-header">
                 <span class="dex-title">🧪 Isotopedex</span>
                 <span class="dex-counts">
-                    <b>${c.caught}</b>/${total} caught &nbsp;·&nbsp; <b>${c.seen}</b>/${total} seen
+                    <b>${c.caught}</b>/${total} caught &nbsp;·&nbsp; <b>${c.seen}</b>/${total} discovered
                 </span>
                 <button class="dex-close" aria-label="Close">✕</button>
             </div>
@@ -102,14 +102,16 @@ function makeCard(el: ElementInfo): HTMLDivElement {
 
     // Portrait: real art if the Elemental has a PNG, otherwise a tinted disc
     // showing its symbol. CSS silhouettes either one while it's unseen.
+    // Meaningful alt text for screen readers (hidden creatures stay hidden).
+    const alt = known ? `${el.monster}, the ${el.name} Elemental` : 'Undiscovered Elemental';
     const artKey = elementalArtKey(el.id);
     const portrait = artKey
-        ? `<img class="dex-art" src="assets/elementals/${el.id}.png" alt="">`
-        : `<div class="dex-art dex-art-disc" style="--tint:#${el.tint.toString(16).padStart(6, '0')}">${el.symbol}</div>`;
+        ? `<img class="dex-art" src="assets/elementals/${el.id}.png" alt="${alt}">`
+        : `<div class="dex-art dex-art-disc" style="--tint:#${el.tint.toString(16).padStart(6, '0')}" role="img" aria-label="${alt}">${el.symbol}</div>`;
 
     const badge =
         status === 'caught' ? `<div class="dex-badge caught">✓ Caught</div>`
-        : status === 'seen' ? `<div class="dex-badge seen">👁 Seen</div>`
+        : status === 'seen' ? `<div class="dex-badge seen">Seen</div>`
         : `<div class="dex-badge locked">Undiscovered</div>`;
 
     card.innerHTML = `
@@ -119,7 +121,7 @@ function makeCard(el: ElementInfo): HTMLDivElement {
         <div class="dex-el">${known ? `${el.symbol} · ${el.name}` : '— — —'}</div>
         <div class="dex-stats">${known
             ? `Atomic #${el.number}<br>Protons ${el.number} · Electrons ${el.number}`
-            : 'Answer its quiz to reveal'}</div>
+            : 'Find and meet it to reveal!'}</div>
         ${badge}`;
     return card;
 }

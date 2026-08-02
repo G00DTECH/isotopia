@@ -167,7 +167,7 @@ html, body {
 }
 .quiz-prompt { font-size: 17px; line-height: 1.4; margin-bottom: 16px; }
 
-.quiz-choices { display: grid; gap: 8px; }
+.quiz-choices { display: grid; gap: 12px; }
 .quiz-choice {
     text-align: left;
     font: inherit;
@@ -196,8 +196,13 @@ html, body {
 .quiz-feedback.ok { color: #34d17a; }
 .quiz-feedback.no { color: #ff9aa2; }
 
-.quiz-continue {
+.quiz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-top: 14px;
+}
+.quiz-continue {
     font: inherit;
     font-size: 16px;
     min-height: 44px;
@@ -209,6 +214,19 @@ html, body {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
+.quiz-retry {
+    font: inherit;
+    font-size: 16px;
+    min-height: 44px;
+    padding: 12px 18px;
+    color: #eef4ff;
+    background: #1c3358;
+    border: 2px solid #3f5f8f;
+    border-radius: 6px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.quiz-retry:active, .quiz-continue:active { transform: scale(0.97); }
 
 /* ---- "Leave building" button (interiors only) ---- */
 .leave-button {
@@ -332,8 +350,8 @@ html, body {
 .dex-close {
     font: inherit;
     font-size: 18px;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     color: #10203a;
     background: #ffd166;
     border: none;
@@ -406,13 +424,13 @@ html, body {
 .dex-name { font-size: 15px; font-weight: bold; color: #ffd166; }
 .dex-unseen .dex-name { color: #6a7ea3; }
 .dex-el {
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.75;
     margin-top: 2px;
 }
-.dex-stats { font-size: 11px; line-height: 1.4; margin-top: 6px; opacity: 0.9; }
+.dex-stats { font-size: 12px; line-height: 1.45; margin-top: 6px; opacity: 0.9; }
 
 .dex-badge {
     margin-top: 8px;
@@ -424,3 +442,83 @@ html, body {
 .dex-badge.caught { background: #1f7a3d; color: #d6ffe4; }
 .dex-badge.seen { background: #274672; color: #cfe0ff; }
 .dex-badge.locked { background: #22314e; color: #6a7ea3; }
+
+/* ================= First-run intro / help ================= */
+
+/* Small "?" help button (bottom-left, clear of the interior Leave button up top). */
+.help-button {
+    position: fixed;
+    left: calc(12px + env(safe-area-inset-left));
+    bottom: calc(var(--hud-h) + 12px + env(safe-area-inset-bottom));
+    z-index: 950;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: #10203a;
+    background: #ffd166;
+    border: 3px solid #fff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.intro-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: rgba(10, 12, 24, 0.72);
+    z-index: 1050;                /* above the DEX/quiz so it greets first */
+    font-family: 'Courier New', monospace;
+}
+.intro-card {
+    width: min(460px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #10203a;
+    color: #eef4ff;
+    border: 4px solid #ffd166;
+    border-radius: 12px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+    padding: 22px 22px 24px;
+}
+.intro-title { font-size: 22px; font-weight: bold; color: #ffd166; margin-bottom: 10px; }
+.intro-lead { font-size: 15px; line-height: 1.5; margin: 0 0 14px; }
+.intro-list { font-size: 15px; line-height: 1.7; margin: 0 0 18px; padding-left: 22px; }
+.intro-list li { margin-bottom: 4px; }
+.intro-go {
+    width: 100%;
+    font: inherit;
+    font-size: 17px;
+    font-weight: bold;
+    min-height: 48px;
+    color: #10203a;
+    background: #ffd166;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.intro-go:active { transform: scale(0.98); }
+
+/* ================= Keyboard / switch focus ================= */
+/* -webkit-tap-highlight-color is off globally, so give keyboard users a clear
+   focus ring (mouse/touch taps don't trigger :focus-visible). */
+.quiz-choice:focus-visible,
+.quiz-continue:focus-visible,
+.quiz-retry:focus-visible,
+.quiz-x:focus-visible,
+.dex-button:focus-visible,
+.dex-close:focus-visible,
+.leave-button:focus-visible,
+.help-button:focus-visible,
+.intro-go:focus-visible {
+    outline: 3px solid #ffd166;
+    outline-offset: 2px;
+}

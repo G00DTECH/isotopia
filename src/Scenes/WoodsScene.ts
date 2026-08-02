@@ -4,6 +4,7 @@ import { CollisionStrategy } from 'grid-engine';
 import GameScene from './GameScene';
 import { LayerType } from './enums/LayerType';
 import { Door } from './components/Door';
+import { drawDoorCue } from './components/DoorCue';
 import { SceneName } from './enums/SceneNames';
 
 // The North Woods & Meadow — a natural area reached by following the trail north
@@ -57,11 +58,24 @@ export default class WoodsScene extends GameScene {
 
         // Trail back to town at the south edge; the walkable meadow is to the
         // north, so the entrance pad is the tile to the north (approach from
-        // above and step onto it to leave).
+        // above and step onto it to leave). A glowing "TOWN ▼" pad marks it.
         new Door({
             scene: this, xPosition: WoodsScene.EXIT.x, yPosition: WoodsScene.EXIT.y,
             nextScene: SceneName.Test, entryOffset: { dx: 0, dy: -1 },
         });
+        drawDoorCue(this, WoodsScene.EXIT.x, WoodsScene.EXIT.y - 1, 'TOWN', '▼');
+
+        // The woods are empty on purpose (for now) — a sign says so, so it reads
+        // as "coming soon" instead of "broken / I missed something".
+        this.add.text(WoodsScene.START.x * 16 + 8, 14 * 16, 'Wild Elementals\ncoming soon!', {
+            fontFamily: 'monospace',
+            fontSize: '10px',
+            fontStyle: 'bold',
+            color: '#eaf4ff',
+            align: 'center',
+            backgroundColor: 'rgba(16, 32, 58, 0.7)',
+            padding: { x: 5, y: 4 },
+        }).setOrigin(0.5).setDepth(60).setResolution(3);
     }
 
     createNpcs(): void {

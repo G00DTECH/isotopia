@@ -126,6 +126,14 @@ export default abstract class GameScene extends Phaser.Scene {
         this.gridEngine.movementStarted().subscribe(() => {
             this.playerSprite.anims.stop();
         });
+
+        // iOS Safari blocks audio until a user gesture — unlock on the first tap
+        // so the bark/sniff sounds actually play on an iPad. (NoAudioSoundManager
+        // has no unlock(), hence the guard.)
+        this.input.once('pointerdown', () => {
+            const sm = this.sound as unknown as { locked?: boolean; unlock?: () => void };
+            if (sm.locked && typeof sm.unlock === 'function') sm.unlock();
+        });
     }
 
     update(): void {

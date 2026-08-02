@@ -10,9 +10,12 @@ import WoodsScene from "./Scenes/WoodsScene";
 import { ensureSignedIn } from "./data/auth";
 import { loadQuestionBank } from "./data/questionSource";
 import { initIsotopedex } from "./ui/Isotopedex";
+import { initIntro } from "./ui/Intro";
 
-// Mount the persistent Isotopedex corner button (independent of Phaser scenes).
+// Mount the persistent Isotopedex corner button (independent of Phaser scenes)
+// and the first-run "how to play" card + "?" help button.
 initIsotopedex();
+initIntro();
 
 // If Firebase is configured: sign the student in anonymously, then pull the live
 // question bank. If not (or on any error), the game just keeps the local seed.
@@ -51,7 +54,10 @@ const config = {
         // in the middle. CENTER_BOTH keeps it centred within any letterboxing.
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 600,
+        // 4:3 to match the iPad screen (landscape), so FIT barely letterboxes
+        // instead of leaving big bars beside a square. Interiors bump their
+        // camera zoom to fill the wider view (see InteriorScene).
+        width: 800,
         height: 600
     },
     physics: {

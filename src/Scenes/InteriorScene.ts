@@ -77,6 +77,11 @@ export abstract class InteriorScene extends GameScene {
             .setDisplaySize(this.map.widthInPixels, this.map.heightInPixels)
             .setDepth(-100);
 
+        // The interior is a small square room; on the 4:3 canvas the default
+        // town zoom would leave blank margins beside it. Zoom so the room fills
+        // the canvas width instead.
+        this.cameras.main.setZoom(this.scale.gameSize.width / this.map.widthInPixels);
+
         // EXIT back to town. The room's walkable floor is above the exit, so the
         // entrance pad is the tile to the north — step onto it to leave.
         new Door({

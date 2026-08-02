@@ -48,12 +48,14 @@ export class Door extends NpcsAndObjects {
         // movementStopped fires once when the whole path ends (not per tile), so
         // walking *through* the pad on the way somewhere else won't enter — only
         // coming to rest on it does.
-        scene.gridEngine.movementStopped().subscribe(({ charId }) => {
+        const sub = scene.gridEngine.movementStopped().subscribe(({ charId }) => {
             if (charId !== scene.playerName) return
             const pos = scene.gridEngine.getPosition(scene.playerName)
             if (pos.x === pad.x && pos.y === pad.y) {
                 enter()
             }
         })
+        // Drop the subscription when the scene shuts down so it doesn't leak.
+        scene.events.once('shutdown', () => sub.unsubscribe())
     }
 }

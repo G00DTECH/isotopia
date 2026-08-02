@@ -77,7 +77,7 @@ export class NpcsAndObjects {
             scene.characterMoved = false
         })
 
-        scene.gridEngine.movementStopped().subscribe((observer) => {
+        const stopSub = scene.gridEngine.movementStopped().subscribe((observer) => {
             if (observer.charId !== scene.playerName) return
             scene.gridEngine.setSpeed(scene.playerName, 4)
             this.checkProximity(scene)
@@ -85,8 +85,14 @@ export class NpcsAndObjects {
 
         // A quiz closing also resets speed and re-checks (in case the player is
         // still adjacent after stepping away and back).
-        GlobalInfo.on('inDialogue', () => {
-            this.checkProximity(scene)
+        const onDialogue = (): void => { this.checkProximity(scene) }
+        GlobalInfo.on('inDialogue', onDialogue)
+
+        // Tidy up on scene shutdown so subscriptions/listeners don't pile up
+        // (GlobalInfo is a shared singleton across all scenes).
+        scene.events.once('shutdown', () => {
+            stopSub.unsubscribe()
+            GlobalInfo.off('inDialogue', onDialogue)
         })
     }
 
@@ -95,6 +101,8 @@ export class NpcsAndObjects {
     private static checkProximity(
         scene: GameScene
     ): void {
+        // The inDialogue listener is global, so ignore scenes that are asleep.
+        if (!scene.sys.isActive()) return
         const player = scene.gridEngine.getPosition(scene.playerName)
 
         scene.npcsAndObjectsArray.forEach(object => {
