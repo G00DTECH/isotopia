@@ -75,10 +75,11 @@ export abstract class InteriorScene extends GameScene {
             .setDisplaySize(this.map.widthInPixels, this.map.heightInPixels)
             .setDepth(-100);
 
-        // EXIT back to town, labelled like every other door.
+        // EXIT back to town, labelled like every other door. The room's walkable
+        // floor is above the exit, so the entrance pad is the tile to the north.
         const door = new Door({
             scene: this, xPosition: InteriorScene.EXIT.x, yPosition: InteriorScene.EXIT.y,
-            nextScene: SceneName.Test,
+            nextScene: SceneName.Test, entryOffset: { dx: 0, dy: -1 },
         });
         this.addFloatingLabel(door.name, 'EXIT ▶', '#ffe066');
     }
