@@ -203,8 +203,16 @@ html, body {
     width: clamp(96px, 22vw, 128px);
     animation: enemy-enter 0.45s ease-out, enemy-bob 2.2s ease-in-out 0.45s infinite;
 }
+/* The player's dog, drawn from the real overworld sprite sheet (Perli.png,
+   4 cols x 8 rows) so it's the actual golden lab you walk around as, seen from
+   behind like a GBA battle. Frame 28 (col 0, row 7) = the back view. */
 .battle-player .battle-sprite--dog {
-    width: clamp(80px, 18vw, 104px);
+    width: clamp(84px, 18vw, 108px);
+    aspect-ratio: 198 / 188;
+    background-image: url('assets/Characters/Perli.png');
+    background-repeat: no-repeat;
+    background-size: 400% 800%;
+    background-position: 0% 100%;
     animation: player-enter 0.45s ease-out;
 }
 /* No-art fallback: tinted disc with the element symbol. */
@@ -284,6 +292,26 @@ html, body {
 }
 .battle-arrow[hidden] { display: none; }
 @keyframes gba-blink { 50% { opacity: 0; } }
+
+/* GBA battle-start screen wipe: a couple of white flashes, then a dark hold that
+   the quiz mounts under, then a fade to reveal the battle scene. */
+.battle-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    pointer-events: none;
+    background: #f4f8ff;
+    animation: battle-wipe 0.86s ease-in forwards;
+}
+@keyframes battle-wipe {
+    0%   { opacity: 0; background: #f4f8ff; }
+    8%   { opacity: 1; background: #f4f8ff; }
+    18%  { opacity: 0; background: #f4f8ff; }
+    28%  { opacity: 1; background: #f4f8ff; }
+    38%  { opacity: 1; background: #08101f; }
+    62%  { opacity: 1; background: #08101f; }
+    100% { opacity: 0; background: #08101f; }
+}
 
 /* ✓ / ✗ so right-vs-wrong isn't signalled by colour alone. */
 .quiz-mark { float: right; font-weight: bold; font-size: 14px; }
@@ -449,7 +477,7 @@ html, body {
     align-items: center;
     background: rgba(10, 12, 24, 0.6);
     z-index: 1000;
-    font-family: 'Courier New', monospace;
+    font-family: var(--gba-font);
     padding: 16px;
     box-sizing: border-box;
 }
@@ -458,11 +486,11 @@ html, body {
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    background: #10203a;
-    color: #eef4ff;
-    border: 4px solid #eef4ff;
-    border-radius: 12px;
-    box-shadow: 0 0 0 4px #10203a, 0 12px 34px rgba(0, 0, 0, 0.55);
+    background: #f4f0d8;
+    color: #303030;
+    border: 4px solid #303030;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 3px #b8b088, 0 12px 34px rgba(0, 0, 0, 0.55);
     overflow: hidden;
 }
 .dex-header {
@@ -470,21 +498,21 @@ html, body {
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    background: #b71c1c;
-    border-bottom: 3px solid #ffd166;
+    background: #b3202f;
+    border-bottom: 3px solid #303030;
 }
-.dex-title { font-size: 20px; font-weight: bold; color: #fff; }
-.dex-counts { font-size: 13px; color: #ffe0b2; margin-left: auto; }
-.dex-counts b { color: #fff; font-size: 15px; }
+.dex-title { font-size: 12px; color: #fff; }
+.dex-counts { font-size: 8px; line-height: 1.6; color: #ffe0b2; margin-left: auto; }
+.dex-counts b { color: #fff; }
 .dex-close {
-    font: inherit;
-    font-size: 18px;
+    font-family: var(--gba-font);
+    font-size: 14px;
     width: 44px;
     height: 44px;
-    color: #10203a;
+    color: #303030;
     background: #ffd166;
-    border: none;
-    border-radius: 8px;
+    border: 3px solid #303030;
+    border-radius: 6px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
@@ -506,20 +534,20 @@ html, body {
     align-items: center;
     text-align: center;
     padding: 10px 8px 12px;
-    background: #1c3358;
-    border: 2px solid #3f5f8f;
-    border-radius: 10px;
+    background: #fffdf2;
+    color: #303030;
+    border: 3px solid #303030;
+    border-radius: 6px;
 }
-.dex-card.dex-caught { border-color: #ffd166; box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.35); }
-.dex-card.dex-unseen { opacity: 0.85; }
+.dex-card.dex-caught { border-color: #c99a1e; box-shadow: 0 0 0 2px rgba(201, 154, 30, 0.5); }
+.dex-card.dex-unseen { opacity: 0.9; }
 
 .dex-num {
     position: absolute;
     top: 6px;
     left: 8px;
-    font-size: 11px;
-    color: #9fb4d8;
-    font-weight: bold;
+    font-size: 8px;
+    color: #7a7a55;
 }
 .dex-portrait {
     width: 84px;
@@ -550,27 +578,27 @@ html, body {
 .dex-unseen .dex-art { filter: brightness(0); opacity: 0.5; }
 .dex-unseen .dex-art-disc { background: #0a1526; color: #0a1526; }
 
-.dex-name { font-size: 15px; font-weight: bold; color: #ffd166; }
-.dex-unseen .dex-name { color: #6a7ea3; }
+.dex-name { font-size: 9px; color: #303030; }
+.dex-unseen .dex-name { color: #9a9a75; }
 .dex-el {
-    font-size: 12px;
+    font-size: 7px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    opacity: 0.75;
-    margin-top: 2px;
+    color: #b3202f;
+    margin-top: 4px;
 }
-.dex-stats { font-size: 12px; line-height: 1.45; margin-top: 6px; opacity: 0.9; }
+.dex-stats { font-size: 7px; line-height: 1.7; margin-top: 8px; color: #555; }
 
 .dex-badge {
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 20px;
+    margin-top: 10px;
+    font-size: 7px;
+    padding: 4px 8px;
+    border: 2px solid #303030;
+    border-radius: 4px;
 }
-.dex-badge.caught { background: #1f7a3d; color: #d6ffe4; }
-.dex-badge.seen { background: #274672; color: #cfe0ff; }
-.dex-badge.locked { background: #22314e; color: #6a7ea3; }
+.dex-badge.caught { background: #1f7a3d; color: #eaffef; }
+.dex-badge.seen { background: #e7dfae; color: #303030; }
+.dex-badge.locked { background: #cfc9a8; color: #6a664c; }
 
 /* ================= First-run intro / help ================= */
 
@@ -583,13 +611,12 @@ html, body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    color: #10203a;
+    color: #303030;
     background: #ffd166;
-    border: 3px solid #fff;
+    border: 3px solid #303030;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-    font-family: 'Courier New', monospace;
-    font-size: 20px;
-    font-weight: bold;
+    font-family: var(--gba-font);
+    font-size: 16px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
@@ -604,33 +631,32 @@ html, body {
     box-sizing: border-box;
     background: rgba(10, 12, 24, 0.72);
     z-index: 1050;                /* above the DEX/quiz so it greets first */
-    font-family: 'Courier New', monospace;
+    font-family: var(--gba-font);
 }
 .intro-card {
-    width: min(460px, 94vw);
+    width: min(480px, 94vw);
     max-height: 90vh;
     overflow-y: auto;
-    background: #10203a;
-    color: #eef4ff;
-    border: 4px solid #ffd166;
-    border-radius: 12px;
-    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
-    padding: 22px 22px 24px;
+    background: #f4f0d8;
+    color: #303030;
+    border: 4px solid #303030;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 3px #b8b088, 0 12px 34px rgba(0, 0, 0, 0.55);
+    padding: 20px 20px 22px;
 }
-.intro-title { font-size: 22px; font-weight: bold; color: #ffd166; margin-bottom: 10px; }
-.intro-lead { font-size: 15px; line-height: 1.5; margin: 0 0 14px; }
-.intro-list { font-size: 15px; line-height: 1.7; margin: 0 0 18px; padding-left: 22px; }
-.intro-list li { margin-bottom: 4px; }
+.intro-title { font-size: 13px; line-height: 1.5; color: #b3202f; margin-bottom: 14px; }
+.intro-lead { font-size: 10px; line-height: 1.8; margin: 0 0 16px; }
+.intro-list { font-size: 10px; line-height: 2; margin: 0 0 18px; padding-left: 18px; }
+.intro-list li { margin-bottom: 8px; }
 .intro-go {
     width: 100%;
-    font: inherit;
-    font-size: 17px;
-    font-weight: bold;
+    font-family: var(--gba-font);
+    font-size: 12px;
     min-height: 48px;
-    color: #10203a;
+    color: #303030;
     background: #ffd166;
-    border: none;
-    border-radius: 8px;
+    border: 3px solid #303030;
+    border-radius: 6px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }

@@ -8,7 +8,7 @@ import { basicMovement, clickToMove } from './components/Characters'
 import { Npc } from './components/Npc'
 import { getElement } from '../data/elements'
 import { elementalArtKey, elementalArtPath } from '../data/elementalArt'
-import { openQuiz } from '../ui/QuizOverlay'
+import { startBattle } from '../ui/QuizOverlay'
 import { showNpcDialog } from '../ui/NpcDialog'
 
 // Real Elemental art is a big single image; this scale reads it down to roughly
@@ -240,7 +240,7 @@ export default abstract class GameScene extends Phaser.Scene {
             texture: artKey ?? this.imageNames.Veterinary,
             scale: artKey ? ELEMENTAL_ART_SCALE : 0.7,
             tint: artKey ? undefined : element.tint,
-            action: () => { openQuiz(elementId) },
+            action: () => { startBattle(elementId) },
             // Real art is a single frame → no walking animation mapping.
             walkingAnimationMapping: artKey ? undefined : 0,
         })
@@ -284,6 +284,26 @@ export default abstract class GameScene extends Phaser.Scene {
         })
         // Walk within one tile to start the dialog (same as an Elemental).
         npc.proximityTrigger = true
+    }
+
+    // Pokémon-style random encounters: whenever the player comes to rest on a
+    // tall-grass tile there's a `chance` of a wild Elemental (drawn from `pool`)
+    // ambushing them — the same battle wipe + quiz as a walk-up encounter. Grass
+    // is on the `walls` layer (walkable, no collision), so we read that layer's
+    // tile at the player's tile and match its GID against the grass GIDs.
+    enableGrassEncounters(pool: string[], grassGids: number[], chance: number = 0.15): void {
+        const grass = new Set(grassGids)
+        const sub = this.gridEngine.movementStopped().subscribe((observer) => {
+            if (observer.charId !== this.playerName) return
+            if (GlobalInfo._gameProgress.inDialogue) return
+            const p = this.gridEngine.getPosition(this.playerName)
+            const tile = this.map.getTileAt(p.x, p.y, false, LayerType.Walls)
+            if (!tile || !grass.has(tile.index)) return
+            if (Math.random() > chance) return
+            const id = pool[Math.floor(Math.random() * pool.length)]
+            startBattle(id)
+        })
+        this.events.once('shutdown', () => sub.unsubscribe())
     }
 
     // load map resources

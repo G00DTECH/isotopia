@@ -56,6 +56,11 @@ export default class WoodsScene extends GameScene {
         { elementId: 'carbon',   x: 17, y: 15 },   // lower clearing
     ];
 
+    // Walkable tall-grass GIDs (from tools/gen_woods.py: TALL1/TALL2), and the
+    // pool of wild Elementals that can ambush you when you step through them.
+    private static readonly GRASS_GIDS = [1852, 1853];
+    private static readonly GRASS_POOL = ['oxygen', 'nitrogen', 'carbon', 'hydrogen'];
+
     loadObjectImages(): void {
         this.loadElementalArt(WoodsScene.WILD.map(w => w.elementId));
         // Neonu Reeves, the disco bug — now your woods companion.
@@ -73,6 +78,9 @@ export default class WoodsScene extends GameScene {
             nextScene: SceneName.Test, entryOffset: { dx: 0, dy: -1 },
         });
         drawDoorCue(this, WoodsScene.EXIT.x, WoodsScene.EXIT.y - 1, 'TOWN', '▼');
+
+        // Wild Elementals ambush you in the tall grass, Pokémon-style.
+        this.enableGrassEncounters(WoodsScene.GRASS_POOL, WoodsScene.GRASS_GIDS);
     }
 
     createNpcs(): void {

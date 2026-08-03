@@ -63,7 +63,9 @@ export async function openQuiz(elementId: string): Promise<void> {
     if (isOpen) return;
     const element = getElement(elementId);
     const question = await getQuestion(elementId);
-    if (!element || !question) return;
+    // startBattle() may have frozen the world for the intro wipe; if we can't
+    // actually open a quiz, unfreeze so the dog isn't stuck.
+    if (!element || !question) { setDialogue(false); return; }
 
     isOpen = true;
     setDialogue(true);
@@ -96,7 +98,7 @@ export async function openQuiz(elementId: string): Promise<void> {
                 </div>
                 <div class="battle-player">
                     <div class="battle-platform"></div>
-                    <img class="battle-sprite battle-sprite--dog" src="assets/images/pixel-dog.png" alt="Your dog">
+                    <div class="battle-sprite battle-sprite--dog" role="img" aria-label="Your dog, from behind"></div>
                 </div>
             </div>
             <div class="battle-textbox">
@@ -232,4 +234,21 @@ export async function openQuiz(elementId: string): Promise<void> {
     document.body.appendChild(overlay);
 
     startIntro();
+}
+
+// Kick off an encounter the GBA way: freeze the world, play the battle-start
+// screen wipe, then drop into the quiz once the screen is covered. Used by both
+// walk-up (proximity) encounters and wild tall-grass encounters. (The quiz's
+// own "Try again" reopens via openQuiz directly, so retries skip the wipe.)
+export function startBattle(elementId: string): void {
+    // Guard against a second trigger in the same movement stop (e.g. a wild-grass
+    // tile that also sits next to a fixed Elemental): setDialogue below flips this
+    // synchronously, so any later handler in the same tick bails here.
+    if (isOpen || GlobalInfo._gameProgress.inDialogue) return;
+    setDialogue(true);                 // freeze immediately, before the flash
+    const wipe = document.createElement('div');
+    wipe.className = 'battle-transition';
+    document.body.appendChild(wipe);
+    window.setTimeout(() => { void openQuiz(elementId); }, 460);  // mount under the dark hold
+    window.setTimeout(() => wipe.remove(), 880);                  // then fade to reveal the battle
 }
