@@ -8,6 +8,17 @@
       ".read": "auth != null",
       ".write": "auth != null && auth.token.teacher === true"
     },
+    "classes": {
+      "$classId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.teacher === true",
+        "members": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      }
+    },
     "students": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || auth.token.teacher === true)",
