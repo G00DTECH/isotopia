@@ -139,30 +139,41 @@ export default class TestScene extends GameScene {
     }
 
     // An invisible input zone over the top (the sign) of the library building.
-    // Press and hold it for ~1.2s to open the teacher portal — a hidden entrance
+    // Press and hold it for ~1s to open the teacher portal — a hidden entrance
     // students won't stumble into (and it's gated by Google login + the teacher
     // claim anyway, so being found is harmless). A quick tap just walks the dog.
+    //
+    // NOTE: we cancel only on pointer *release* (global), never on pointer-out.
+    // Holding the spot also tap-walks the dog toward the library, which scrolls
+    // the camera under a still finger; cancelling on pointer-out would kill the
+    // hold the instant the camera moved. A gold ring "charges" while held so the
+    // teacher gets feedback that the secret spot is active.
     private addTeacherPortalTile(b: { key: string; oy: number; h: number; doorX: number; widthTiles: number }): void {
+        const HOLD_MS = 1000
         const src = this.textures.get(b.key).getSourceImage() as HTMLImageElement
         const drawnH = (b.widthTiles * 16) / src.width * src.height
-        const bottomY = (b.oy + b.h) * 16
-        const topY = bottomY - drawnH
-        const zone = this.add.zone(
-            (b.doorX + 0.5) * 16,          // centred on the door column
-            topY + drawnH * 0.12,          // over the sign band near the top
-            b.widthTiles * 16 * 0.5,       // ~half the width
-            drawnH * 0.22,
-        ).setInteractive()
+        const topY = (b.oy + b.h) * 16 - drawnH
+        const zx = (b.doorX + 0.5) * 16
+        const zy = topY + drawnH * 0.2
+        const zw = b.widthTiles * 16 * 0.7
+        const zh = drawnH * 0.36
+        const zone = this.add.zone(zx, zy, zw, zh).setInteractive()
 
         let timer: ReturnType<typeof setTimeout> | undefined
-        const cancel = (): void => { if (timer) { clearTimeout(timer); timer = undefined } }
+        let cue: Phaser.GameObjects.Rectangle | undefined
+        const cancel = (): void => {
+            if (timer) { clearTimeout(timer); timer = undefined }
+            if (cue) { cue.destroy(); cue = undefined }
+        }
         zone.on('pointerdown', () => {
             cancel()
             if (GlobalInfo._gameProgress.inDialogue) return   // not while a quiz/dialog is open
-            timer = setTimeout(() => { window.location.href = 'teacher.html' }, 1200)
+            cue = this.add.rectangle(zx, zy, zw, zh).setStrokeStyle(2, 0xffd166, 0.9).setDepth(60)
+            cue.setAlpha(0)
+            this.tweens.add({ targets: cue, alpha: 0.9, duration: HOLD_MS, ease: 'Sine.easeIn' })
+            timer = setTimeout(() => { window.location.href = 'teacher.html' }, HOLD_MS)
         })
-        zone.on('pointerup', cancel)
-        zone.on('pointerout', cancel)
+        this.input.on('pointerup', cancel)   // any release anywhere cancels the hold
     }
 
     // Paints the lake: rippled blue fill over the blocking water cells, plus a
