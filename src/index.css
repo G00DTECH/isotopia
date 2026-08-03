@@ -112,27 +112,32 @@ html, body {
     100% { opacity: 0; }
 }
 
-/* ---- Elemonsters quiz overlay ---- */
+/* ---- Elemonsters quiz: GBA-style battle overlay ---- */
+:root {
+    --gba-font: 'Press Start 2P', 'Courier New', monospace;
+}
+
 .quiz-overlay {
     position: fixed;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(10, 12, 24, 0.55);
+    background: rgba(10, 12, 24, 0.6);
     z-index: 1000;
-    font-family: 'Courier New', monospace;
+    font-family: var(--gba-font);
 }
 
-.quiz-card {
+.quiz-card.battle {
     position: relative;
-    width: min(520px, 92vw);
-    background: #10203a;
-    color: #eef4ff;
-    border: 4px solid #eef4ff;
-    border-radius: 10px;
-    box-shadow: 0 0 0 4px #10203a, 0 10px 30px rgba(0, 0, 0, 0.5);
-    padding: 18px 20px 20px;
+    width: min(560px, 94vw);
+    background: #08101f;
+    color: #f4f8ff;
+    border: 4px solid #f4f8ff;
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px #08101f, 0 10px 30px rgba(0, 0, 0, 0.55);
+    padding: 10px;
+    overflow: hidden;
 }
 
 /* Back out of a quiz you didn't mean to start (no keyboard on iPad). */
@@ -140,89 +145,213 @@ html, body {
     position: absolute;
     top: 8px;
     right: 8px;
+    z-index: 3;
     width: 44px;
     height: 44px;
-    font: inherit;
-    font-size: 18px;
-    color: #eef4ff;
-    background: #1c3358;
-    border: 2px solid #3f5f8f;
+    font-family: var(--gba-font);
+    font-size: 14px;
+    color: #f4f8ff;
+    background: rgba(12, 22, 42, 0.85);
+    border: 2px solid #6f9bd8;
     border-radius: 8px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
 .quiz-x:active { transform: scale(0.94); }
 
-/* ✓ / ✗ so right-vs-wrong isn't signalled by colour alone. */
-.quiz-mark { float: right; font-weight: bold; font-size: 18px; }
-
-.quiz-monster { font-size: 18px; margin-bottom: 2px; padding-right: 44px; }
-.quiz-monster strong { color: #ffd166; }
-.quiz-element {
-    font-size: 12px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-bottom: 14px;
+/* ---- The battle scene: sky + ground, two platforms, two combatants ---- */
+.battle-scene {
+    position: relative;
+    height: clamp(180px, 34vh, 250px);
+    border-radius: 5px;
+    overflow: hidden;
+    /* GBA-ish sky over a grassy field with a horizon band. */
+    background:
+        linear-gradient(#bfe9ff 0%, #d8f3ff 45%, #8fd06a 45%, #6fbf52 100%);
+    image-rendering: pixelated;
 }
-.quiz-prompt { font-size: 17px; line-height: 1.4; margin-bottom: 16px; }
 
-.quiz-choices { display: grid; gap: 12px; }
+/* Elliptical battle platforms under each combatant. */
+.battle-platform {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 150px;
+    height: 34px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(60, 140, 40, 0.9) 0%, rgba(60, 140, 40, 0) 72%);
+}
+
+.battle-enemy, .battle-player {
+    position: absolute;
+    width: 190px;
+    height: 130px;
+}
+.battle-enemy  { top: 8px;    right: 6px; }
+.battle-player { bottom: 4px; left: 6px; }
+
+.battle-sprite {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    image-rendering: pixelated;
+    filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35));
+}
+.battle-enemy  .battle-sprite {
+    width: clamp(96px, 22vw, 128px);
+    animation: enemy-enter 0.45s ease-out, enemy-bob 2.2s ease-in-out 0.45s infinite;
+}
+.battle-player .battle-sprite--dog {
+    width: clamp(80px, 18vw, 104px);
+    animation: player-enter 0.45s ease-out;
+}
+/* No-art fallback: tinted disc with the element symbol. */
+.battle-sprite--disc {
+    width: 104px;
+    height: 104px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 0, 0, 0.25);
+    color: #fff;
+    font-size: 22px;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+/* Little shrink when the Elemental is caught. */
+.battle-enemy.caught .battle-sprite {
+    animation: enemy-caught 0.5s ease-in forwards;
+}
+
+/* Enemy nameplate box (top-left, like the GBA HP window). */
+.battle-info {
+    position: absolute;
+    z-index: 2;
+    background: #f4f0d8;
+    color: #303030;
+    border: 3px solid #303030;
+    border-radius: 6px;
+    padding: 6px 9px;
+    line-height: 1.5;
+}
+.battle-info--enemy { top: 10px; left: 10px; }
+.battle-name { display: block; font-size: 11px; }
+.battle-elem { display: block; font-size: 8px; color: #6a5; margin-top: 3px; }
+
+@keyframes enemy-enter {
+    from { transform: translateX(120px); opacity: 0; }
+    to   { transform: translateX(-50%);  opacity: 1; }
+}
+@keyframes player-enter {
+    from { transform: translateX(-120px); opacity: 0; }
+    to   { transform: translateX(-50%);   opacity: 1; }
+}
+@keyframes enemy-bob {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-5px); }
+}
+@keyframes enemy-caught {
+    to { transform: translateX(-50%) scale(0.1); opacity: 0; }
+}
+
+/* ---- The GBA dialog textbox below the scene ---- */
+.battle-textbox {
+    position: relative;
+    margin-top: 8px;
+    background: #f4f0d8;
+    color: #303030;
+    border: 3px solid #303030;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 2px #b8b088;
+    padding: 14px 16px;
+    cursor: pointer;                  /* tap the box to advance/skip text */
+}
+.battle-text {
+    font-size: 12px;
+    line-height: 1.85;
+    min-height: 2.4em;
+}
+/* Blinking "▼ more" arrow, GBA-style. */
+.battle-arrow {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    font-size: 12px;
+    color: #303030;
+    animation: gba-blink 0.7s steps(1) infinite;
+}
+.battle-arrow[hidden] { display: none; }
+@keyframes gba-blink { 50% { opacity: 0; } }
+
+/* ✓ / ✗ so right-vs-wrong isn't signalled by colour alone. */
+.quiz-mark { float: right; font-weight: bold; font-size: 14px; }
+
+/* Answer menu, styled like the GBA move/menu list. */
+.quiz-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;   /* 2x2 battle-menu layout */
+    gap: 8px;
+    margin-top: 12px;
+}
+.quiz-choices[hidden] { display: none; }
 .quiz-choice {
     text-align: left;
-    font: inherit;
-    font-size: 16px;
+    font-family: var(--gba-font);
+    font-size: 10px;
+    line-height: 1.5;
     min-height: 44px;                 /* comfortable finger target on iPad */
-    padding: 12px 14px;
-    color: #eef4ff;
-    background: #1c3358;
-    border: 2px solid #3f5f8f;
-    border-radius: 6px;
+    padding: 10px 12px;
+    color: #303030;
+    background: #fffdf2;
+    border: 3px solid #303030;
+    border-radius: 4px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
-.quiz-choice:hover:not(:disabled) { background: #274672; }
-.quiz-choice:disabled { cursor: default; opacity: 0.9; }
-.quiz-choice.correct { background: #1f7a3d; border-color: #34d17a; }
-.quiz-choice.wrong { background: #8a2530; border-color: #ef5350; }
+.quiz-choice:hover:not(:disabled) { background: #ffe9a8; }
+.quiz-choice:disabled { cursor: default; opacity: 0.95; }
+.quiz-choice.correct { background: #b6f0c2; border-color: #1f7a3d; }
+.quiz-choice.wrong   { background: #ffc2c8; border-color: #b3202f; }
 .quiz-key {
     display: inline-block;
-    width: 20px;
-    color: #ffd166;
+    width: 16px;
+    color: #b3202f;
     font-weight: bold;
 }
 
-.quiz-feedback { min-height: 20px; margin-top: 14px; font-size: 14px; }
-.quiz-feedback.ok { color: #34d17a; }
-.quiz-feedback.no { color: #ff9aa2; }
+.quiz-feedback { min-height: 16px; margin-top: 12px; font-size: 10px; line-height: 1.6; }
+.quiz-feedback.ok { color: #1f7a3d; }
+.quiz-feedback.no { color: #b3202f; }
 
 .quiz-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 12px;
 }
 .quiz-continue {
-    font: inherit;
-    font-size: 16px;
+    font-family: var(--gba-font);
+    font-size: 11px;
     min-height: 44px;
     padding: 12px 18px;
-    color: #10203a;
+    color: #303030;
     background: #ffd166;
-    border: none;
-    border-radius: 6px;
+    border: 3px solid #303030;
+    border-radius: 4px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
 .quiz-retry {
-    font: inherit;
-    font-size: 16px;
+    font-family: var(--gba-font);
+    font-size: 11px;
     min-height: 44px;
     padding: 12px 18px;
-    color: #eef4ff;
-    background: #1c3358;
-    border: 2px solid #3f5f8f;
-    border-radius: 6px;
+    color: #303030;
+    background: #fffdf2;
+    border: 3px solid #303030;
+    border-radius: 4px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
