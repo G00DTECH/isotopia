@@ -3,11 +3,34 @@
 A running summary of what was built and where things stand, so work can resume
 after clearing/compacting the conversation.
 
-## Latest session (2026-08) — mobile movement, Isotopedex, exit UX, UX-review fixes
+## Latest session (2026-08) — mobile movement, Isotopedex, exit UX, UX-review fixes, woods roster
 The students use **iPads**, so this pass made the game touch-only, fixed the one
 thing that made it unplayable without a keyboard, built the **Isotopedex**
-(the creature-collection screen), fixed **building exit/entry UX**, and applied
-the **red-blocker fixes** from a 3-agent mobile UX review.
+(the creature-collection screen), fixed **building exit/entry UX**, applied
+the **red-blocker fixes** from a 3-agent mobile UX review, and **populated the
+North Woods + reshuffled the roster** (below).
+
+### North Woods populated + roster changes
+Now **9 Elementals** (was 11 — Chlorine and Helium were retired: removed from
+`data/elements.ts`, so the Isotopedex is out of /9; questions for them are left
+orphaned in `questions.ts`, harmless).
+- **Nitromon (Nitrogen) got real art:** `tools/remove_bg.py "sprites/nitromon
+  low res.png" src/assets/elementals/nitrogen.png`; added `nitrogen` to
+  `elementalArt.ts` ART_IDS. (Source canvas is wide but the character is centred
+  with transparent margins, so it renders comparably to the others.)
+- **North Woods now has 3 wild Elementals** (`WoodsScene.WILD`): Oxygen (16,8,
+  up north), Nitrogen (25,10, in the tall grass), Carbon (17,15). Positions were
+  picked against the computed walkability of `woods_map.json`.
+- **Neonu Reeves is now a woods companion** (moved out of the town plaza). Walk
+  up to him near the entrance (20,19) → a 3-line disco dialog (`src/ui/NpcDialog.ts`)
+  → he `gridEngine.follow()`s you around the woods. New `GameScene.spawnCompanionNpc`
+  (one-time proximity trigger that disarms itself, then follows).
+- **Roster moves:** Oxygen left the town lake; Carbon left Hardware; Nitrogen
+  left Auto — all three now wild in the woods. Chlorine left Hannaford; Helium
+  left the Library (both retired). Town outdoors is now just Hydrogen + Neon.
+- Removed the woods "coming soon" sign.
+
+### Building entry/exit UX + UX-review blocker fixes
 
 ### Building entry/exit UX + UX-review blocker fixes
 - **Visible door pads.** Entrances/exits were invisible step-on tiles. New

@@ -5,13 +5,12 @@ import { CollisionStrategy } from 'grid-engine';
 import GameScene from "./GameScene"
 import { LayerType } from './enums/LayerType';
 
-// The Elementals that live outdoors. Hydrogen + Oxygen sit on the shore of the
-// town lake (the lake is water, H2O); Neon roams the plaza like a glowing sign.
-// The rest live inside the venues (Hardware/Hannaford/Auto/Library) so exploring
-// the town is rewarded. Coordinates are walkable grass, clear of paths/lake.
+// The Elementals that live outdoors in town. Hydrogen sits on the shore of the
+// town lake; Neon roams the plaza like a glowing sign. Oxygen, Carbon and
+// Nitrogen now live wild up in the North Woods. The rest live inside the venues.
+// Coordinates are walkable grass, clear of paths/lake.
 const MONSTER_SPAWNS: { elementId: string; x: number; y: number }[] = [
     { elementId: 'hydrogen', x: 23, y: 16 },
-    { elementId: 'oxygen',   x: 23, y: 19 },
     { elementId: 'neon',     x: 16, y: 14 },
 ];
 
@@ -94,8 +93,6 @@ export default class TestScene extends GameScene {
             }
         )
         this.loadElementalArt(MONSTER_SPAWNS.map(s => s.elementId))
-        // Neonu Reeves, the disco bug — a flavor NPC, not an Elemental.
-        this.load.image('neonu_reeves', '../assets/elementals/neonu-reeves.png')
         // Storefront art (backgrounds already removed) overlaid on the map.
         BUILDINGS.forEach(b => this.load.image(b.key, `../assets/buildings/${b.key.replace('bld_', '')}.png`))
     }
@@ -159,9 +156,6 @@ export default class TestScene extends GameScene {
         // One Elemental per outdoor spawn — real art if it has any, else a tinted
         // placeholder. Walk within one tile to start its quiz (see spawnElemental).
         MONSTER_SPAWNS.forEach(spawn => this.spawnElemental(spawn.elementId, spawn.x, spawn.y));
-
-        // Neonu Reeves grooves around the plaza. No quiz — he just exists.
-        this.spawnWanderingNpc('neonu_reeves', 16, 17);
     }
 
     update(): void {

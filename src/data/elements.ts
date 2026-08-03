@@ -15,12 +15,10 @@ export interface ElementInfo {
 
 export const ELEMENTS: ElementInfo[] = [
     { id: 'hydrogen', symbol: 'H',  name: 'Hydrogen', monster: 'Hydromon',  number: 1,  tint: 0x7ec8ff },
-    { id: 'helium',   symbol: 'He', name: 'Helium',   monster: 'Heliomon',  number: 2,  tint: 0xffd166 },
     { id: 'carbon',   symbol: 'C',  name: 'Carbon',   monster: 'Carbonmon', number: 6,  tint: 0x9e9e9e },
     { id: 'nitrogen', symbol: 'N',  name: 'Nitrogen', monster: 'Nitromon',  number: 7,  tint: 0x64b5f6 },
     { id: 'oxygen',   symbol: 'O',  name: 'Oxygen',   monster: 'Oxymon',    number: 8,  tint: 0xef5350 },
     { id: 'sodium',   symbol: 'Na', name: 'Sodium',   monster: 'Sodimon',   number: 11, tint: 0xba68c8 },
-    { id: 'chlorine', symbol: 'Cl', name: 'Chlorine', monster: 'Chloromon', number: 17, tint: 0xaed581 },
     // Added with real character art (see src/assets/elementals + data/elementalArt.ts).
     { id: 'magnesium', symbol: 'Mg', name: 'Magnesium', monster: 'Magmunch',  number: 12, tint: 0xff8a65 },
     { id: 'iron',      symbol: 'Fe', name: 'Iron',      monster: 'Ferrox',    number: 26, tint: 0x8d6e63 },

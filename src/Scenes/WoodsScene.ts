@@ -49,8 +49,17 @@ export default class WoodsScene extends GameScene {
         this.loadObjectImages();
     }
 
+    // The wild Elementals that roam the woods (each has real art).
+    private static readonly WILD: { elementId: string; x: number; y: number }[] = [
+        { elementId: 'oxygen',   x: 16, y: 8 },    // up north in the meadow
+        { elementId: 'nitrogen', x: 25, y: 10 },   // in the tall grass
+        { elementId: 'carbon',   x: 17, y: 15 },   // lower clearing
+    ];
+
     loadObjectImages(): void {
-        // No NPCs in the woods yet — nothing extra to load.
+        this.loadElementalArt(WoodsScene.WILD.map(w => w.elementId));
+        // Neonu Reeves, the disco bug — now your woods companion.
+        this.load.image('neonu_reeves', '../assets/elementals/neonu-reeves.png');
     }
 
     create(): void {
@@ -64,22 +73,18 @@ export default class WoodsScene extends GameScene {
             nextScene: SceneName.Test, entryOffset: { dx: 0, dy: -1 },
         });
         drawDoorCue(this, WoodsScene.EXIT.x, WoodsScene.EXIT.y - 1, 'TOWN', '▼');
-
-        // The woods are empty on purpose (for now) — a sign says so, so it reads
-        // as "coming soon" instead of "broken / I missed something".
-        this.add.text(WoodsScene.START.x * 16 + 8, 14 * 16, 'Wild Elementals\ncoming soon!', {
-            fontFamily: 'monospace',
-            fontSize: '10px',
-            fontStyle: 'bold',
-            color: '#eaf4ff',
-            align: 'center',
-            backgroundColor: 'rgba(16, 32, 58, 0.7)',
-            padding: { x: 5, y: 4 },
-        }).setOrigin(0.5).setDepth(60).setResolution(3);
     }
 
     createNpcs(): void {
-        // Intentionally empty for now — the woods are for exploring.
+        // Wild Elementals roaming the meadow — walk up to any to start its quiz.
+        WoodsScene.WILD.forEach(w => this.spawnElemental(w.elementId, w.x, w.y));
+
+        // Neonu Reeves waits near the entrance; talk to him and he tags along.
+        this.spawnCompanionNpc('neonu_reeves', 20, 19, 'Neonu Reeves', [
+            'Yo yo yo! Neonu Reeves — grooviest bug in the whole meadow. ✨',
+            "You're out catchin' Elementals? Righteous. These woods are crawlin' with 'em.",
+            "Tell you what: I'll tag along and keep the vibes high. Let's boogie! 🕺",
+        ]);
     }
 
     update(): void {

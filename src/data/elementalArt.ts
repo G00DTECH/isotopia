@@ -3,7 +3,7 @@
 // Keep the filenames in sync with the copies under src/assets/elementals/.
 const ART_IDS = new Set<string>([
     'hydrogen', 'carbon', 'oxygen', 'sodium',
-    'iron', 'neon', 'uranium', 'magnesium',
+    'iron', 'neon', 'uranium', 'magnesium', 'nitrogen',
 ]);
 
 /** Texture cache key for an Elemental's art, or undefined if it has no art. */

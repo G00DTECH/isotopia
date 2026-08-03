@@ -9,6 +9,7 @@ import { Npc } from './components/Npc'
 import { getElement } from '../data/elements'
 import { elementalArtKey, elementalArtPath } from '../data/elementalArt'
 import { openQuiz } from '../ui/QuizOverlay'
+import { showNpcDialog } from '../ui/NpcDialog'
 
 // Real Elemental art is a big single image; this scale reads it down to roughly
 // character size on the grid (the placeholder NPC spritesheet uses ~0.7).
@@ -260,6 +261,29 @@ export default abstract class GameScene extends Phaser.Scene {
         })
         // delay(ms) between hops, wandering within `radius` tiles of the start.
         this.gridEngine.moveRandomly(npc.name, 2000, 2)
+    }
+
+    // A companion NPC: walk up to it to trigger a one-time dialog, after which it
+    // becomes a follower that trails the player around the scene. Used for Neonu
+    // Reeves in the woods. Single-frame art → no walking-animation mapping.
+    spawnCompanionNpc(textureKey: string, x: number, y: number, speaker: string, lines: string[]): void {
+        const npc = new Npc({
+            scene: this,
+            xPosition: x,
+            yPosition: y,
+            texture: textureKey,
+            scale: ELEMENTAL_ART_SCALE,
+            action: () => {
+                // Talk once, then befriend: disarm the proximity trigger so the
+                // dialog can't re-fire while he's tagging along.
+                npc.proximityTrigger = false
+                showNpcDialog(speaker, lines, () => {
+                    this.gridEngine.follow(npc.name, this.playerName, 1, true)
+                })
+            },
+        })
+        // Walk within one tile to start the dialog (same as an Elemental).
+        npc.proximityTrigger = true
     }
 
     // load map resources
