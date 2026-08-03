@@ -89,9 +89,9 @@ export default class WoodsScene extends GameScene {
 
         // Neonu Reeves waits near the entrance; talk to him and he tags along.
         this.spawnCompanionNpc('neonu_reeves', 20, 19, 'Neonu Reeves', [
-            'Yo yo yo! Neonu Reeves — grooviest bug in the whole meadow. ✨',
+            'Yo yo yo! Neonu Reeves — grooviest bug in the whole meadow.',
             "You're out catchin' Elementals? Righteous. These woods are crawlin' with 'em.",
-            "Tell you what: I'll tag along and keep the vibes high. Let's boogie! 🕺",
+            "Tell you what: I'll tag along and keep the vibes high. Let's boogie!",
         ]);
     }
 

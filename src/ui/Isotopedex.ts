@@ -52,7 +52,7 @@ export function openIsotopedex(): void {
     overlay.innerHTML = `
         <div class="dex-panel">
             <div class="dex-header">
-                <span class="dex-title">🧪 Isotopedex</span>
+                <span class="dex-title">Isotopedex</span>
                 <span class="dex-counts">
                     <b>${c.caught}</b>/${total} caught &nbsp;·&nbsp; <b>${c.seen}</b>/${total} discovered
                 </span>

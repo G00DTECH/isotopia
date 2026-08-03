@@ -4,6 +4,7 @@ import { drawDoorCue } from './components/DoorCue';
 import { CollisionStrategy } from 'grid-engine';
 import GameScene from "./GameScene"
 import { LayerType } from './enums/LayerType';
+import GlobalInfo from '../GlobalInfo';
 
 // The Elementals that live outdoors in town. Hydrogen sits on the shore of the
 // town lake; Neon roams the plaza like a glowing sign. Oxygen, Carbon and
@@ -107,6 +108,11 @@ export default class TestScene extends GameScene {
         // Real storefront art over the invisible building footprints.
         BUILDINGS.forEach(b => this.drawBuilding(b))
 
+        // Secret teacher-portal entrance: an invisible long-press hotspot on the
+        // library's sign. Students never see it; a teacher press-and-holds it.
+        const library = BUILDINGS.find(b => b.key === 'bld_library')
+        if (library) this.addTeacherPortalTile(library)
+
         // One door per building: step onto the square outside it (one tile south)
         // to enter. A glowing "ENTER ▲" pad marks each entrance so new players can
         // tell buildings are enterable — most Elementals live inside them.
@@ -130,6 +136,33 @@ export default class TestScene extends GameScene {
             .setOrigin(0.5, 1)
             .setScale(scale)
             .setDepth(1)
+    }
+
+    // An invisible input zone over the top (the sign) of the library building.
+    // Press and hold it for ~1.2s to open the teacher portal — a hidden entrance
+    // students won't stumble into (and it's gated by Google login + the teacher
+    // claim anyway, so being found is harmless). A quick tap just walks the dog.
+    private addTeacherPortalTile(b: { key: string; oy: number; h: number; doorX: number; widthTiles: number }): void {
+        const src = this.textures.get(b.key).getSourceImage() as HTMLImageElement
+        const drawnH = (b.widthTiles * 16) / src.width * src.height
+        const bottomY = (b.oy + b.h) * 16
+        const topY = bottomY - drawnH
+        const zone = this.add.zone(
+            (b.doorX + 0.5) * 16,          // centred on the door column
+            topY + drawnH * 0.12,          // over the sign band near the top
+            b.widthTiles * 16 * 0.5,       // ~half the width
+            drawnH * 0.22,
+        ).setInteractive()
+
+        let timer: ReturnType<typeof setTimeout> | undefined
+        const cancel = (): void => { if (timer) { clearTimeout(timer); timer = undefined } }
+        zone.on('pointerdown', () => {
+            cancel()
+            if (GlobalInfo._gameProgress.inDialogue) return   // not while a quiz/dialog is open
+            timer = setTimeout(() => { window.location.href = 'teacher.html' }, 1200)
+        })
+        zone.on('pointerup', cancel)
+        zone.on('pointerout', cancel)
     }
 
     // Paints the lake: rippled blue fill over the blocking water cells, plus a

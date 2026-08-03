@@ -184,8 +184,8 @@ export async function openQuiz(elementId: string): Promise<void> {
 
         const answerText = question!.choices[question!.correctIndex];
         feedbackEl.textContent = correct
-            ? `Caught it! ${element!.monster} joined your Isotopedex. 🎉`
-            : `So close! The answer is "${answerText}" ✓. Tap Try again to catch ${element!.monster}!`;
+            ? `Caught it! ${element!.monster} joined your Isotopedex.`
+            : `So close! The answer is "${answerText}". Tap Try again to catch ${element!.monster}!`;
         feedbackEl.classList.add(correct ? 'ok' : 'no');
 
         // A correct answer catches the Elemental (adds its card); any encounter

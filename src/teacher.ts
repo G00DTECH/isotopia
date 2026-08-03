@@ -75,7 +75,7 @@ function renderNotAuthorized(): void {
 function renderPortal(): void {
     app.innerHTML = `
         <header class="topbar">
-            <span class="brand">🧪 Isotopia Teacher</span>
+            <span class="brand">Isotopia Teacher</span>
             <nav class="tabs">
                 <button data-tab="questions" class="${tab === 'questions' ? 'on' : ''}">Questions</button>
                 <button data-tab="schedule" class="${tab === 'schedule' ? 'on' : ''}">Schedule</button>
