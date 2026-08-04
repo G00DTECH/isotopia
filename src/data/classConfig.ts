@@ -52,14 +52,16 @@ export function currentUnitDay(s: ClassSettings, today: Date = new Date()): numb
     return Math.max(1, Math.min(UNIT_LENGTH_DAYS, day));
 }
 
-/** Whether an element is released to students right now. Unscheduled elements
- *  default to available; the releaseAllNow override unlocks everything. */
+/** Whether an element is released to students right now. With releaseAllNow on,
+ *  everything is unlocked. Otherwise an element is released only once it has an
+ *  unlock day that has arrived — an element with NO assigned day stays hidden
+ *  ("not scheduled yet"). */
 export function isElementReleased(
     s: ClassSettings, elementId: string, today: Date = new Date(),
 ): boolean {
     if (s.releaseAllNow) return true;
     const day = s.release[elementId];
-    if (day == null) return true;
+    if (day == null) return false;            // unscheduled = not released yet
     return day <= currentUnitDay(s, today);
 }
 
