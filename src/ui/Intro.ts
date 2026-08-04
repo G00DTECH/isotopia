@@ -23,18 +23,18 @@ export function showIntro(): void {
         <div class="intro-card">
             <div class="intro-title">${icon('flask')} Welcome to Isotopia!</div>
             <p class="intro-lead">You're a trainer exploring a town full of element
-                creatures called <b>Elementals</b>. Meet them, answer their
-                questions, and collect them all!</p>
+                creatures called Elementals. Meet them, answer their questions,
+                and collect them all!</p>
             <ul class="intro-list">
-                <li>${icon('pin')} <b>Tap</b> where you want to walk.</li>
-                <li>${icon('paw')} Walk <b>up to an Elemental</b> to start its quiz.</li>
-                <li>${icon('ball')} Answer correctly to <b>catch</b> it!</li>
-                <li>${icon('door')} Step on a glowing <b>▲/▼</b> pad to enter or leave a building.</li>
-                <li>${icon('book')} Tap the <b>DEX</b> (top-right) to see everything you've found.</li>
+                <li>${icon('pin')} Tap where you want to walk.</li>
+                <li>${icon('paw')} Walk up to an Elemental to start its quiz.</li>
+                <li>${icon('ball')} Answer correctly to catch it!</li>
+                <li>${icon('door')} Step on a glowing pad to enter or leave a building.</li>
+                <li>${icon('book')} Tap the DEX (top-right) to see everything you've found.</li>
             </ul>
             <div class="intro-actions">
                 ${currentStudent() ? '' : `<button class="intro-signin">Sign in to save (@sad15.org)</button>`}
-                <button class="intro-go">Let's go! ▶</button>
+                <button class="intro-go">Let's go!</button>
             </div>
         </div>`;
 

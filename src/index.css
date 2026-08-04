@@ -204,15 +204,15 @@ html, body {
     animation: enemy-enter 0.45s ease-out, enemy-bob 2.2s ease-in-out 0.45s infinite;
 }
 /* The player's dog, drawn from the real overworld sprite sheet (Perli.png,
-   4 cols x 8 rows) so it's the actual golden lab you walk around as, seen from
-   behind like a GBA battle. Frame 28 (col 0, row 7) = the back view. */
+   4 cols x 8 rows) so it's the actual golden lab you walk around as. Frame 12
+   (col 0, row 3) = the right-facing side view, so it faces the wild Elemental. */
 .battle-player .battle-sprite--dog {
     width: clamp(84px, 18vw, 108px);
     aspect-ratio: 198 / 188;
     background-image: url('assets/Characters/Perli.png');
     background-repeat: no-repeat;
     background-size: 400% 800%;
-    background-position: 0% 100%;
+    background-position: 0% 42.857%;
     animation: player-enter 0.45s ease-out;
 }
 /* No-art fallback: tinted disc with the element symbol. */
