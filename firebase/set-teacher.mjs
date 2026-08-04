@@ -17,11 +17,16 @@ import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
 const uid = process.argv[2];
+const remove = ['off', 'remove', 'false'].includes((process.argv[3] || '').toLowerCase());
 if (!uid) {
-    console.error('Usage: node firebase/set-teacher.mjs <UID>');
+    console.error('Usage: node firebase/set-teacher.mjs <UID> [off]');
+    console.error('  add:    node firebase/set-teacher.mjs <UID>');
+    console.error('  remove: node firebase/set-teacher.mjs <UID> off');
     process.exit(1);
 }
 
 initializeApp({ credential: applicationDefault() });
-await getAuth().setCustomUserClaims(uid, { teacher: true });
-console.log(`Granted { teacher: true } to ${uid}. Sign out and back in to refresh your token.`);
+await getAuth().setCustomUserClaims(uid, remove ? null : { teacher: true });
+console.log(remove
+    ? `Removed teacher access from ${uid}. They must sign out and back in.`
+    : `Granted teacher access to ${uid}. They must sign out and back in to refresh their token.`);
