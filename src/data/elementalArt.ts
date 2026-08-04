@@ -13,5 +13,5 @@ export function elementalArtKey(id: string): string | undefined {
 
 /** Load path (relative to the scene HTML) for an Elemental's art PNG. */
 export function elementalArtPath(id: string): string {
-    return `../assets/elementals/${id}.png`;
+    return `assets/elementals/${id}.png`;
 }

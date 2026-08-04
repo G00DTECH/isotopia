@@ -5,6 +5,7 @@
 import GlobalInfo from '../GlobalInfo';
 import { icon } from './icons';
 import { currentStudent, signInStudent } from '../data/studentAuth';
+import { isFirebaseConfigured } from '../data/firebase';
 
 let overlay: HTMLDivElement | null = null;
 
@@ -33,7 +34,7 @@ export function showIntro(): void {
                 <li>${icon('book')} Tap the DEX (top-right) to see everything you've found.</li>
             </ul>
             <div class="intro-actions">
-                ${currentStudent() ? '' : `<button class="intro-signin">Sign in to save (@sad15.org)</button>`}
+                ${(currentStudent() || !isFirebaseConfigured()) ? '' : `<button class="intro-signin">Sign in to save (@sad15.org)</button>`}
                 <button class="intro-go">Let's go!</button>
             </div>
         </div>`;

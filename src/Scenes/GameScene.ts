@@ -63,6 +63,10 @@ export default abstract class GameScene extends Phaser.Scene {
     };
     imageMapDefaultPath: string;
     tilemapJSONPath!: string;
+    // Embedded Tiled map data (set by scenes from src/data/maps.ts). When set, the
+    // map loads from here instead of an XHR fetch, so the game runs offline from a
+    // plain file:// (double-click) with no web server.
+    mapData?: object;
     layerNames: LayerType[];
     imageMapNames!: {
         [index: string]: {
@@ -94,9 +98,9 @@ export default abstract class GameScene extends Phaser.Scene {
 
     // load here images and sounds common in all scenes
     preload(): void {
-        this.load.image('emptyDoorGraphic', '../assets/images/emptyDoorGraphic.png')
-        this.load.audio('bark', '../../assets/music/bark.wav');
-        this.load.audio('sniff', '../../assets/music/sniffing.wav');
+        this.load.image('emptyDoorGraphic', 'assets/images/emptyDoorGraphic.png')
+        this.load.audio('bark', 'assets/music/bark.wav');
+        this.load.audio('sniff', 'assets/music/sniffing.wav');
     }
 
     create(): void {
@@ -209,7 +213,7 @@ export default abstract class GameScene extends Phaser.Scene {
     // load the main character
     loadAvatarSpritesheet(): void {
         this.load.spritesheet(this.imageNames.Perli,
-            '../assets/Characters/Perli.png',
+            'assets/Characters/Perli.png',
             { frameWidth: 198, frameHeight: 188 }
         );
     }
@@ -323,11 +327,22 @@ export default abstract class GameScene extends Phaser.Scene {
                 `${path ?? ''}${this.imageMapNames[key].name}.png`)
         })
 
-        this.load.tilemapTiledJSON(this.imageNames.Map, this.tilemapJSONPath)
+        // Only fetch the map over the network if a scene didn't embed it.
+        if (!this.mapData) {
+            this.load.tilemapTiledJSON(this.imageNames.Map, this.tilemapJSONPath)
+        }
     }
 
     // prepare tilesets and create the map
     createMap(): void {
+        // Embedded map (offline) → seed the tilemap cache so make.tilemap finds
+        // it by key, exactly as load.tilemapTiledJSON would have after fetching.
+        if (this.mapData && !this.cache.tilemap.exists(this.imageNames.Map)) {
+            this.cache.tilemap.add(this.imageNames.Map, {
+                format: Phaser.Tilemaps.Formats.TILED_JSON,
+                data: this.mapData,
+            })
+        }
         const tilesetInfo = Object.keys(this.imageMapNames).map(key => {
             return {
                 tilesetName: this.imageMapNames[key].name,

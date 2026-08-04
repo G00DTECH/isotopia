@@ -113,6 +113,13 @@ html, body {
 }
 
 /* ---- Isotopia quiz: GBA-style battle overlay ---- */
+/* Self-hosted pixel font (SIL Open Font License) so the GBA look survives fully
+   offline — no Google Fonts network dependency. */
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('assets/fonts/PressStart2P-Regular.woff2') format('woff2');
+    font-display: swap;
+}
 :root {
     --gba-font: 'Press Start 2P', 'Courier New', monospace;
 }

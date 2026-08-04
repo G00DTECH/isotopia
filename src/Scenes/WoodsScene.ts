@@ -6,6 +6,7 @@ import { LayerType } from './enums/LayerType';
 import { Door } from './components/Door';
 import { drawDoorCue } from './components/DoorCue';
 import { SceneName } from './enums/SceneNames';
+import { MAPS } from '../data/maps';
 
 // The North Woods & Meadow — a natural area reached by following the trail north
 // out of town (see the Woods door in TestScene). The whole scene is built from
@@ -28,8 +29,9 @@ export default class WoodsScene extends GameScene {
             Map: 'woods_map',
         };
 
-        this.tilemapJSONPath = '../assets/tilemap/woods_map.json';
-        this.imageMapDefaultPath = '../assets/tiles/';
+        this.tilemapJSONPath = 'assets/tilemap/woods_map.json';
+        this.imageMapDefaultPath = 'assets/tiles/';
+        this.mapData = MAPS.woods_map;
         this.imageMapNames = {
             modern_exterior: { name: 'modern_exterior' },
         };
@@ -64,7 +66,7 @@ export default class WoodsScene extends GameScene {
     loadObjectImages(): void {
         this.loadElementalArt(WoodsScene.WILD.map(w => w.elementId));
         // Neonu Reeves, the disco bug — now your woods companion.
-        this.load.image('neonu_reeves', '../assets/elementals/neonu-reeves.png');
+        this.load.image('neonu_reeves', 'assets/elementals/neonu-reeves.png');
     }
 
     create(): void {

@@ -4,6 +4,7 @@ import { drawDoorCue } from './components/DoorCue';
 import { CollisionStrategy } from 'grid-engine';
 import GameScene from "./GameScene"
 import { LayerType } from './enums/LayerType';
+import { MAPS } from '../data/maps';
 
 // The Elementals that live outdoors in town. Hydrogen sits on the shore of the
 // town lake; Neon roams the plaza like a glowing sign. Oxygen, Carbon and
@@ -57,8 +58,9 @@ export default class TestScene extends GameScene {
             Map: 'test_map',
         }
 
-        this.tilemapJSONPath = '../assets/tilemap/test_map.json'
-        this.imageMapDefaultPath = '../assets/tiles/'
+        this.tilemapJSONPath = 'assets/tilemap/test_map.json'
+        this.imageMapDefaultPath = 'assets/tiles/'
+        this.mapData = MAPS.test_map
         this.imageMapNames = {
             modern_exterior: {
                 name: "modern_exterior",
@@ -86,7 +88,7 @@ export default class TestScene extends GameScene {
     loadObjectImages(): void {
         this.load.spritesheet(
             this.imageNames.Veterinary,
-            '../assets/Characters/NPCs_1.png',
+            'assets/Characters/NPCs_1.png',
             {
                 frameWidth: 32,
                 frameHeight: 64
@@ -94,7 +96,7 @@ export default class TestScene extends GameScene {
         )
         this.loadElementalArt(MONSTER_SPAWNS.map(s => s.elementId))
         // Storefront art (backgrounds already removed) overlaid on the map.
-        BUILDINGS.forEach(b => this.load.image(b.key, `../assets/buildings/${b.key.replace('bld_', '')}.png`))
+        BUILDINGS.forEach(b => this.load.image(b.key, `assets/buildings/${b.key.replace('bld_', '')}.png`))
     }
 
     create(): void {

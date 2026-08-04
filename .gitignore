@@ -22,3 +22,6 @@ firebase/seed/serviceAccount.json
 # Local environment (Firebase web config etc.) — copy .env.example to .env
 .env
 .env.local
+
+# Packaged offline build (npm run package)
+isotopia-offline.zip

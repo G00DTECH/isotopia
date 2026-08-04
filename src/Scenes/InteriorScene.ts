@@ -7,6 +7,7 @@ import { Door } from './components/Door';
 import { SceneName } from './enums/SceneNames';
 import { showLeaveButton, hideLeaveButton } from '../ui/LeaveButton';
 import { drawDoorCue } from './components/DoorCue';
+import { MAPS } from '../data/maps';
 
 // A building interior you reach from the town. The room art is a single Luna
 // Town background image; a shared 16x16 collision grid (interior_room.json)
@@ -30,7 +31,7 @@ export abstract class InteriorScene extends GameScene {
         super(sceneName, InteriorScene.START.x, InteriorScene.START.y, [LayerType.Floor, LayerType.Walls]);
         this.elementIds = elementIds;
         this.backgroundKey = `${sceneName}_bg`;
-        this.backgroundPath = `../assets/rooms/${backgroundFile}`;
+        this.backgroundPath = `assets/rooms/${backgroundFile}`;
 
         this.imageNames = {
             Perli: `${sceneName}_perli`,
@@ -38,8 +39,9 @@ export abstract class InteriorScene extends GameScene {
             Map: `${sceneName}_room`,
         };
 
-        this.tilemapJSONPath = '../assets/tilemap/interior_room.json';
-        this.imageMapDefaultPath = '../assets/tiles/';
+        this.tilemapJSONPath = 'assets/tilemap/interior_room.json';
+        this.imageMapDefaultPath = 'assets/tiles/';
+        this.mapData = MAPS.interior_room;
         this.imageMapNames = {
             blank16: { name: 'blank16' },
         };
@@ -62,7 +64,7 @@ export abstract class InteriorScene extends GameScene {
 
     loadObjectImages(): void {
         this.load.spritesheet(this.imageNames.Veterinary,
-            '../assets/Characters/NPCs_1.png',
+            'assets/Characters/NPCs_1.png',
             { frameWidth: 32, frameHeight: 64 });
         this.loadElementalArt(this.elementIds);
     }

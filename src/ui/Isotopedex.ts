@@ -12,6 +12,7 @@ import { statusOf, counts } from '../data/progress';
 import { elementalArtKey } from '../data/elementalArt';
 import { elementReleased } from '../data/classConfig';
 import { currentStudent, signInStudent, signOutStudent, onStudentAuth } from '../data/studentAuth';
+import { isFirebaseConfigured } from '../data/firebase';
 
 const escHtml = (s: string): string =>
     s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
@@ -127,6 +128,11 @@ function renderAccount(): void {
     if (!overlay) return;
     const host = overlay.querySelector('.dex-account') as HTMLElement | null;
     if (!host) return;
+    // Offline build (no Firebase): no sign-in, just say progress is local.
+    if (!isFirebaseConfigured()) {
+        host.innerHTML = `<span class="dex-acct-label">Progress saves on this device.</span>`;
+        return;
+    }
     const u = currentStudent();
     if (u) {
         host.innerHTML = `<span class="dex-acct-label">Saving as <b>${escHtml(u.displayName || u.email || 'you')}</b></span>
