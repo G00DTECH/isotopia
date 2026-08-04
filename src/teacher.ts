@@ -28,6 +28,39 @@ let editing: StoredQuestion | null = null;      // question being added/edited
 const esc = (s: string): string =>
     s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
+// A transient confirmation / error toast, bottom-centre.
+function flash(msg: string, isError = false): void {
+    const t = document.createElement('div');
+    t.className = `toast${isError ? ' error' : ''}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 2300);
+}
+
+// Run an async write with the button disabled + relabelled, so the teacher sees
+// it working, can't double-submit, and gets a success/error toast. Returns true
+// only if the action succeeded — the caller keeps state (e.g. an open editor) on
+// failure instead of re-rendering as if it saved.
+async function withBusy(
+    btn: HTMLButtonElement, busyLabel: string, action: () => Promise<void>, okMsg?: string,
+): Promise<boolean> {
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = busyLabel;
+    try {
+        await action();
+        if (okMsg) flash(okMsg);
+        return true;
+    } catch (err) {
+        flash((err as Error).message || 'Something went wrong — not saved.', true);
+        return false;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+    }
+}
+
 // ---------------------------------------------------------------- boot
 function boot(): void {
     if (!isFirebaseConfigured()) {
@@ -77,11 +110,12 @@ function renderPortal(): void {
     app.innerHTML = `
         <header class="topbar">
             <span class="brand">Isotopia Teacher</span>
-            <nav class="tabs">
-                <button data-tab="questions" class="${tab === 'questions' ? 'on' : ''}">Questions</button>
-                <button data-tab="schedule" class="${tab === 'schedule' ? 'on' : ''}">Schedule</button>
-                <button data-tab="settings" class="${tab === 'settings' ? 'on' : ''}">Settings</button>
-                <button data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</button>
+            <nav class="tabs" role="tablist">
+                ${(['questions', 'schedule', 'settings', 'students'] as const).map(t => {
+                    const on = tab === t;
+                    const label = t[0].toUpperCase() + t.slice(1);
+                    return `<button data-tab="${t}" role="tab" aria-selected="${on}" class="${on ? 'on' : ''}">${label}</button>`;
+                }).join('')}
             </nav>
             <span class="who">${esc(session!.user.email || '')}
                 <button id="signout" class="btn small">Sign out</button></span>
@@ -89,7 +123,18 @@ function renderPortal(): void {
         <main id="panel"></main>`;
 
     app.querySelectorAll<HTMLButtonElement>('.tabs button').forEach(b =>
-        b.addEventListener('click', () => { tab = b.dataset.tab as typeof tab; editing = null; renderPanel(); }));
+        b.addEventListener('click', () => {
+            tab = b.dataset.tab as typeof tab;
+            editing = null;
+            // Move the active highlight to the clicked tab (renderPanel only
+            // repaints the panel, not the nav).
+            app.querySelectorAll<HTMLButtonElement>('.tabs button').forEach(x => {
+                const on = x === b;
+                x.classList.toggle('on', on);
+                x.setAttribute('aria-selected', String(on));
+            });
+            renderPanel();
+        }));
     (document.getElementById('signout') as HTMLButtonElement)
         .addEventListener('click', () => signOutTeacher());
     renderPanel();
@@ -140,12 +185,14 @@ function renderQuestions(): void {
                 </section>`).join('')}
         </div>`;
 
-    const importBtn = document.getElementById('import');
+    const importBtn = document.getElementById('import') as HTMLButtonElement | null;
     importBtn?.addEventListener('click', async () => {
-        importBtn.setAttribute('disabled', 'true');
-        const n = await importStarterQuestions().catch(err => { alert(err.message); return 0; });
-        if (n) { questions = await loadAllQuestions(); }
-        renderQuestions();
+        let imported = 0;
+        const ok = await withBusy(importBtn, 'Importing…', async () => {
+            imported = await importStarterQuestions();
+            questions = await loadAllQuestions();
+        });
+        if (ok) { flash(imported ? `Imported ${imported} starter questions.` : 'Question bank already has data.'); renderQuestions(); }
     });
     (document.getElementById('add') as HTMLButtonElement).addEventListener('click', () => {
         editing = { id: '', elementId: ELEMENTS[0].id, angle: '', prompt: '', choices: ['', '', '', ''], correctIndex: 0 };
@@ -158,10 +205,14 @@ function renderQuestions(): void {
         }));
     panel.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b =>
         b.addEventListener('click', async () => {
-            if (!confirm('Delete this question?')) return;
-            await deleteQuestion(b.dataset.del as string).catch(err => alert(err.message));
-            questions = await loadAllQuestions();
-            renderQuestions();
+            const q = questions.find(x => x.id === b.dataset.del);
+            const preview = q ? `"${q.prompt.slice(0, 60)}${q.prompt.length > 60 ? '…' : ''}"` : 'this question';
+            if (!confirm(`Delete ${preview}?`)) return;
+            const ok = await withBusy(b, 'Deleting…', async () => {
+                await deleteQuestion(b.dataset.del as string);
+                questions = await loadAllQuestions();
+            }, 'Question deleted.');
+            if (ok) renderQuestions();
         }));
     if (editing) renderQuestionEditor();
 }
@@ -184,14 +235,16 @@ function renderQuestionEditor(): void {
             <label>Question prompt
                 <textarea id="f-prompt" rows="2" placeholder="How many protons…">${esc(q.prompt)}</textarea>
             </label>
-            <div class="choices">
+            <fieldset class="choices">
+                <legend>Answer choices — select the correct one</legend>
                 ${q.choices.map((c, i) => `
                     <label class="choice">
-                        <input type="radio" name="correct" value="${i}" ${i === q.correctIndex ? 'checked' : ''}>
-                        <input class="f-choice" data-i="${i}" value="${esc(c)}" placeholder="Choice ${i + 1}">
+                        <input type="radio" name="correct" value="${i}" ${i === q.correctIndex ? 'checked' : ''}
+                            aria-label="Mark choice ${i + 1} correct">
+                        <input class="f-choice" data-i="${i}" value="${esc(c)}" placeholder="Choice ${i + 1}"
+                            aria-label="Choice ${i + 1} text">
                     </label>`).join('')}
-                <p class="muted small">Select the radio next to the correct answer.</p>
-            </div>
+            </fieldset>
             <div class="row">
                 <button id="q-save" class="btn primary">Save question</button>
                 <button id="q-cancel" class="btn">Cancel</button>
@@ -199,18 +252,24 @@ function renderQuestionEditor(): void {
         </div>`;
 
     (document.getElementById('q-cancel') as HTMLButtonElement).addEventListener('click', () => { editing = null; renderQuestions(); });
-    (document.getElementById('q-save') as HTMLButtonElement).addEventListener('click', async () => {
+    const saveBtn = document.getElementById('q-save') as HTMLButtonElement;
+    saveBtn.addEventListener('click', async () => {
         q.elementId = (document.getElementById('f-el') as HTMLSelectElement).value;
         q.angle = (document.getElementById('f-angle') as HTMLInputElement).value.trim();
         q.prompt = (document.getElementById('f-prompt') as HTMLTextAreaElement).value.trim();
         q.choices = Array.from(host.querySelectorAll<HTMLInputElement>('.f-choice')).map(i => i.value.trim());
         q.correctIndex = Number((host.querySelector('input[name="correct"]:checked') as HTMLInputElement).value);
-        if (!q.prompt || q.choices.some(c => !c)) { alert('Fill in the prompt and all four choices.'); return; }
-        await saveQuestion(q).catch(err => alert(err.message));
-        editing = null;
-        questions = await loadAllQuestions();
-        renderQuestions();
+        if (!q.prompt || q.choices.some(c => !c)) { flash('Fill in the prompt and all four choices.', true); return; }
+        // Keep the editor open on failure (withBusy returns false) so nothing is lost.
+        const ok = await withBusy(saveBtn, 'Saving…', async () => {
+            await saveQuestion(q);
+            questions = await loadAllQuestions();
+        }, 'Question saved.');
+        if (ok) { editing = null; renderQuestions(); }
     });
+
+    // Bring the editor into view when opened from a question low in the list.
+    host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ---------------------------------------------------------------- schedule
@@ -228,9 +287,11 @@ function renderSchedule(): void {
                 Release everything now (testing)
             </label>
         </div>
-        <p class="muted small">${settings.unitStartDate
-            ? `Today is <b>day ${day}</b> of ${UNIT_LENGTH_DAYS}.`
-            : `No start date set — schedule days won't gate anything until you set one.`}</p>
+        ${settings.releaseAllNow
+            ? `<p class="muted small">"Release everything now" is on — every element is visible regardless of the days below.</p>`
+            : (!settings.unitStartDate
+                ? `<div class="warn">Set a unit start date, or nothing unlocks: while "Release everything now" is off, every element without a reached unlock day stays hidden.</div>`
+                : `<p class="muted small">Today is <b>day ${day}</b> of ${UNIT_LENGTH_DAYS}. Elements with no day, or a later day, stay hidden.</p>`)}
         <table class="sched">
             <thead><tr><th>Element</th><th>Unlock day (1–${UNIT_LENGTH_DAYS})</th><th>Status now</th></tr></thead>
             <tbody>
@@ -247,7 +308,8 @@ function renderSchedule(): void {
         </table>
         <div class="row"><button id="sched-save" class="btn primary">Save schedule</button></div>`;
 
-    (document.getElementById('sched-save') as HTMLButtonElement).addEventListener('click', async () => {
+    const schedSaveBtn = document.getElementById('sched-save') as HTMLButtonElement;
+    schedSaveBtn.addEventListener('click', async () => {
         settings.unitStartDate = (document.getElementById('s-start') as HTMLInputElement).value;
         settings.releaseAllNow = (document.getElementById('s-all') as HTMLInputElement).checked;
         const release: Record<string, number> = {};
@@ -256,8 +318,9 @@ function renderSchedule(): void {
             if (!Number.isNaN(v)) release[i.dataset.el as string] = Math.max(1, Math.min(UNIT_LENGTH_DAYS, v));
         });
         settings.release = release;
-        await saveSettings(settings).catch(err => alert(err.message));
-        renderSchedule();
+        // Re-render on success so the status badges + any clamped day values refresh.
+        const ok = await withBusy(schedSaveBtn, 'Saving…', async () => { await saveSettings(settings); }, 'Schedule saved.');
+        if (ok) renderSchedule();
     });
 }
 
@@ -273,11 +336,12 @@ function renderSettings(): void {
             turn each encounter into a short battle (used when the HP-bar battle lands).</p>
         <div class="row"><button id="set-save" class="btn primary">Save settings</button></div>`;
 
-    (document.getElementById('set-save') as HTMLButtonElement).addEventListener('click', async () => {
+    const setSaveBtn = document.getElementById('set-save') as HTMLButtonElement;
+    setSaveBtn.addEventListener('click', async () => {
         const v = parseInt((document.getElementById('g-catch') as HTMLInputElement).value, 10);
         settings.questionsToCatch = Math.max(1, Math.min(5, Number.isNaN(v) ? 1 : v));
-        await saveSettings(settings).catch(err => alert(err.message));
-        renderSettings();
+        const ok = await withBusy(setSaveBtn, 'Saving…', async () => { await saveSettings(settings); }, 'Settings saved.');
+        if (ok) renderSettings();
     });
 }
 
@@ -287,7 +351,12 @@ async function renderStudents(): Promise<void> {
     const head = `<div class="row between"><h2>Students</h2>
         <button id="stu-refresh" class="btn">Refresh</button></div>`;
     const wireRefresh = (): void => {
-        document.getElementById('stu-refresh')?.addEventListener('click', () => { void renderStudents(); });
+        const btn = document.getElementById('stu-refresh') as HTMLButtonElement | null;
+        btn?.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.textContent = 'Loading…';
+            void renderStudents();
+        });
     };
 
     panel.innerHTML = `${head}<p class="muted">Loading…</p>`;
@@ -308,7 +377,7 @@ async function renderStudents(): Promise<void> {
             <tbody>${rows.map(r => {
                 let att = 0, cor = 0;
                 (Object.values(r.stats) as { attempts: number; correct: number }[])
-                    .forEach(s => { att += s.attempts; cor += s.correct; });
+                    .forEach(s => { if (s && typeof s === 'object') { att += s.attempts || 0; cor += s.correct || 0; } });
                 const acc = att ? Math.round((cor / att) * 100) : 0;
                 return `<tr>
                     <td>${esc(r.name)}<div class="muted small">${esc(r.email)}</div></td>
