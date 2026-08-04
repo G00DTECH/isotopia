@@ -72,6 +72,24 @@ export function openIsotopedex(): void {
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeIsotopedex();
     });
+
+    // Hidden teacher entrance: press and hold the "Isotopedex" title for ~1s to
+    // open the teacher portal. Students tap cards, not hold the title, so they
+    // won't stumble into it — and it's gated by Google login + the teacher claim
+    // anyway. A gold underline fills while holding to signal it's working.
+    const title = overlay.querySelector('.dex-title') as HTMLElement;
+    let holdTimer: ReturnType<typeof setTimeout> | undefined;
+    const cancelHold = (): void => {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = undefined; }
+        title.classList.remove('holding');
+    };
+    title.addEventListener('pointerdown', () => {
+        title.classList.add('holding');
+        holdTimer = setTimeout(() => { window.location.href = 'teacher.html'; }, 1000);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+        title.addEventListener(ev, cancelHold));
+
     document.addEventListener('keydown', onKey);
     document.body.appendChild(overlay);
 }

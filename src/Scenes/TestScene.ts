@@ -4,7 +4,6 @@ import { drawDoorCue } from './components/DoorCue';
 import { CollisionStrategy } from 'grid-engine';
 import GameScene from "./GameScene"
 import { LayerType } from './enums/LayerType';
-import GlobalInfo from '../GlobalInfo';
 
 // The Elementals that live outdoors in town. Hydrogen sits on the shore of the
 // town lake; Neon roams the plaza like a glowing sign. Oxygen, Carbon and
@@ -108,11 +107,6 @@ export default class TestScene extends GameScene {
         // Real storefront art over the invisible building footprints.
         BUILDINGS.forEach(b => this.drawBuilding(b))
 
-        // Secret teacher-portal entrance: an invisible long-press hotspot on the
-        // library's sign. Students never see it; a teacher press-and-holds it.
-        const library = BUILDINGS.find(b => b.key === 'bld_library')
-        if (library) this.addTeacherPortalTile(library)
-
         // One door per building: step onto the square outside it (one tile south)
         // to enter. A glowing "ENTER ▲" pad marks each entrance so new players can
         // tell buildings are enterable — most Elementals live inside them.
@@ -136,44 +130,6 @@ export default class TestScene extends GameScene {
             .setOrigin(0.5, 1)
             .setScale(scale)
             .setDepth(1)
-    }
-
-    // An invisible input zone over the top (the sign) of the library building.
-    // Press and hold it for ~1s to open the teacher portal — a hidden entrance
-    // students won't stumble into (and it's gated by Google login + the teacher
-    // claim anyway, so being found is harmless). A quick tap just walks the dog.
-    //
-    // NOTE: we cancel only on pointer *release* (global), never on pointer-out.
-    // Holding the spot also tap-walks the dog toward the library, which scrolls
-    // the camera under a still finger; cancelling on pointer-out would kill the
-    // hold the instant the camera moved. A gold ring "charges" while held so the
-    // teacher gets feedback that the secret spot is active.
-    private addTeacherPortalTile(b: { key: string; oy: number; h: number; doorX: number; widthTiles: number }): void {
-        const HOLD_MS = 1000
-        const src = this.textures.get(b.key).getSourceImage() as HTMLImageElement
-        const drawnH = (b.widthTiles * 16) / src.width * src.height
-        const topY = (b.oy + b.h) * 16 - drawnH
-        const zx = (b.doorX + 0.5) * 16
-        const zy = topY + drawnH * 0.2
-        const zw = b.widthTiles * 16 * 0.7
-        const zh = drawnH * 0.36
-        const zone = this.add.zone(zx, zy, zw, zh).setInteractive()
-
-        let timer: ReturnType<typeof setTimeout> | undefined
-        let cue: Phaser.GameObjects.Rectangle | undefined
-        const cancel = (): void => {
-            if (timer) { clearTimeout(timer); timer = undefined }
-            if (cue) { cue.destroy(); cue = undefined }
-        }
-        zone.on('pointerdown', () => {
-            cancel()
-            if (GlobalInfo._gameProgress.inDialogue) return   // not while a quiz/dialog is open
-            cue = this.add.rectangle(zx, zy, zw, zh).setStrokeStyle(2, 0xffd166, 0.9).setDepth(60)
-            cue.setAlpha(0)
-            this.tweens.add({ targets: cue, alpha: 0.9, duration: HOLD_MS, ease: 'Sine.easeIn' })
-            timer = setTimeout(() => { window.location.href = 'teacher.html' }, HOLD_MS)
-        })
-        this.input.on('pointerup', cancel)   // any release anywhere cancels the hold
     }
 
     // Paints the lake: rippled blue fill over the blocking water cells, plus a
