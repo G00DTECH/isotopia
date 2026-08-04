@@ -1,20 +1,41 @@
-// Anonymous student sign-in. Realtime Database rules require `auth != null`, so
-// we sign the student in before reading questions. Anonymous auth gives each
-// device a stable uid (used later to key their students/{uid} progress).
+// Startup sign-in. Realtime Database rules require `auth != null`, so we make
+// sure there's an authenticated user before reading questions/settings.
+//
+// Students play as GUESTS by default (anonymous auth). A student may optionally
+// sign in with their @sad15.org Google account to save progress (see
+// studentAuth.ts) — so here we must NOT blindly create a new anonymous user if a
+// (persisted) Google session is being restored, or we'd sign them out. We wait
+// for Firebase to restore any existing session first, then fall back to
+// anonymous only if there's nobody.
 
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirebaseApp } from './firebase';
 
 let uid: string | undefined;
 
-/** Signs in anonymously if Firebase is configured. Returns the uid, or undefined. */
-export async function ensureSignedIn(): Promise<string | undefined> {
+/** Ensure a signed-in user (restoring a persisted one if present, otherwise
+ *  anonymous). Returns the uid, or undefined if Firebase isn't configured. */
+export function ensureSignedIn(): Promise<string | undefined> {
     const app = getFirebaseApp();
-    if (!app) return undefined;
-    if (uid) return uid;
-    const cred = await signInAnonymously(getAuth(app));
-    uid = cred.user.uid;
-    return uid;
+    if (!app) return Promise.resolve(undefined);
+    const auth = getAuth(app);
+    return new Promise((resolve) => {
+        const unsub = onAuthStateChanged(auth, async (user) => {
+            unsub();
+            if (user) {
+                uid = user.uid;
+                resolve(uid);
+            } else {
+                try {
+                    const cred = await signInAnonymously(auth);
+                    uid = cred.user.uid;
+                    resolve(uid);
+                } catch {
+                    resolve(undefined);
+                }
+            }
+        });
+    });
 }
 
 export function currentUid(): string | undefined {

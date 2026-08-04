@@ -8,6 +8,7 @@ import AutoScene from "./Scenes/AutoScene";
 import LibraryScene from "./Scenes/LibraryScene";
 import WoodsScene from "./Scenes/WoodsScene";
 import { ensureSignedIn } from "./data/auth";
+import { initStudentAuth } from "./data/studentAuth";
 import { loadQuestionBank } from "./data/questionSource";
 import { loadAndCacheSettings } from "./data/classConfig";
 import { initIsotopedex } from "./ui/Isotopedex";
@@ -17,6 +18,10 @@ import { initIntro } from "./ui/Intro";
 // and the first-run "how to play" card + "?" help button.
 initIsotopedex();
 initIntro();
+
+// Watch for optional student sign-in (guests stay anonymous). When a student
+// signs in, their progress syncs to students/{uid}.
+initStudentAuth();
 
 // If Firebase is configured: sign the student in anonymously, then pull the live
 // question bank + class settings (which elements are released). We start Phaser

@@ -11,6 +11,10 @@ import { ELEMENTS, ElementInfo } from '../data/elements';
 import { statusOf, counts } from '../data/progress';
 import { elementalArtKey } from '../data/elementalArt';
 import { elementReleased } from '../data/classConfig';
+import { currentStudent, signInStudent, signOutStudent, onStudentAuth } from '../data/studentAuth';
+
+const escHtml = (s: string): string =>
+    s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
 let overlay: HTMLDivElement | null = null;
 
@@ -39,6 +43,8 @@ export function initIsotopedex(): void {
     };
     if (document.body) mount();
     else document.addEventListener('DOMContentLoaded', mount);
+    // Keep the account bar in sync if sign-in state changes while the dex is open.
+    onStudentAuth(() => { if (overlay) renderAccount(); });
 }
 
 export function openIsotopedex(): void {
@@ -62,6 +68,7 @@ export function openIsotopedex(): void {
                 </span>
                 <button class="dex-close" aria-label="Close">✕</button>
             </div>
+            <div class="dex-account"></div>
             <div class="dex-grid"></div>
         </div>`;
 
@@ -71,6 +78,7 @@ export function openIsotopedex(): void {
         .sort((a, b) => a.number - b.number)
         .forEach(el => grid.appendChild(makeCard(el)));
 
+    renderAccount();
     overlay.querySelector('.dex-close')!.addEventListener('click', closeIsotopedex);
     // Click the dark backdrop (but not the panel) to close.
     overlay.addEventListener('click', (e) => {
@@ -111,6 +119,26 @@ export function closeIsotopedex(): void {
     overlay.remove();
     overlay = null;
     setDialogue(false);
+}
+
+// The account bar in the dex header: guest vs signed-in student, with a
+// sign-in / sign-out button. Re-rendered on auth changes while the dex is open.
+function renderAccount(): void {
+    if (!overlay) return;
+    const host = overlay.querySelector('.dex-account') as HTMLElement | null;
+    if (!host) return;
+    const u = currentStudent();
+    if (u) {
+        host.innerHTML = `<span class="dex-acct-label">Saving as <b>${escHtml(u.displayName || u.email || 'you')}</b></span>
+            <button class="dex-auth-btn" id="dex-signout">Sign out</button>`;
+        (host.querySelector('#dex-signout') as HTMLButtonElement)
+            .addEventListener('click', () => { void signOutStudent(); });
+    } else {
+        host.innerHTML = `<span class="dex-acct-label">Playing as <b>guest</b> — saved on this device only.</span>
+            <button class="dex-auth-btn" id="dex-signin">Sign in to save</button>`;
+        (host.querySelector('#dex-signin') as HTMLButtonElement)
+            .addEventListener('click', () => { signInStudent().catch(e => alert(e.message)); });
+    }
 }
 
 // One creature card. Unseen → dark silhouette + "???"; seen/caught reveal the

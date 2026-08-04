@@ -15,13 +15,14 @@ import {
 import {
     StoredQuestion, loadAllQuestions, saveQuestion, deleteQuestion, importStarterQuestions,
 } from './data/questionAdmin';
+import { loadClassStudents } from './data/studentAdmin';
 
 const app = document.getElementById('app') as HTMLDivElement;
 
 let session: TeacherSession | null = null;
 let settings: ClassSettings = { ...DEFAULT_SETTINGS };
 let questions: StoredQuestion[] = [];
-let tab: 'questions' | 'schedule' | 'settings' = 'questions';
+let tab: 'questions' | 'schedule' | 'settings' | 'students' = 'questions';
 let editing: StoredQuestion | null = null;      // question being added/edited
 
 const esc = (s: string): string =>
@@ -80,6 +81,7 @@ function renderPortal(): void {
                 <button data-tab="questions" class="${tab === 'questions' ? 'on' : ''}">Questions</button>
                 <button data-tab="schedule" class="${tab === 'schedule' ? 'on' : ''}">Schedule</button>
                 <button data-tab="settings" class="${tab === 'settings' ? 'on' : ''}">Settings</button>
+                <button data-tab="students" class="${tab === 'students' ? 'on' : ''}">Students</button>
             </nav>
             <span class="who">${esc(session!.user.email || '')}
                 <button id="signout" class="btn small">Sign out</button></span>
@@ -96,6 +98,7 @@ function renderPortal(): void {
 function renderPanel(): void {
     if (tab === 'questions') return renderQuestions();
     if (tab === 'schedule') return renderSchedule();
+    if (tab === 'students') { void renderStudents(); return; }
     renderSettings();
 }
 
@@ -276,6 +279,48 @@ function renderSettings(): void {
         await saveSettings(settings).catch(err => alert(err.message));
         renderSettings();
     });
+}
+
+// ---------------------------------------------------------------- students
+async function renderStudents(): Promise<void> {
+    const panel = document.getElementById('panel') as HTMLElement;
+    const head = `<div class="row between"><h2>Students</h2>
+        <button id="stu-refresh" class="btn">Refresh</button></div>`;
+    const wireRefresh = (): void => {
+        document.getElementById('stu-refresh')?.addEventListener('click', () => { void renderStudents(); });
+    };
+
+    panel.innerHTML = `${head}<p class="muted">Loading…</p>`;
+    wireRefresh();
+
+    const rows = await loadClassStudents().catch(() => []);
+    if (rows.length === 0) {
+        panel.innerHTML = `${head}<p class="muted">No students have signed in yet.
+            Guests who don't sign in won't appear here — have students open the DEX
+            and tap "Sign in to save."</p>`;
+        wireRefresh();
+        return;
+    }
+
+    panel.innerHTML = `${head.replace('<h2>Students</h2>', `<h2>Students <span class="muted">(${rows.length})</span></h2>`)}
+        <table class="sched">
+            <thead><tr><th>Student</th><th>Caught</th><th>Seen</th><th>Accuracy</th></tr></thead>
+            <tbody>${rows.map(r => {
+                let att = 0, cor = 0;
+                (Object.values(r.stats) as { attempts: number; correct: number }[])
+                    .forEach(s => { att += s.attempts; cor += s.correct; });
+                const acc = att ? Math.round((cor / att) * 100) : 0;
+                return `<tr>
+                    <td>${esc(r.name)}<div class="muted small">${esc(r.email)}</div></td>
+                    <td>${r.caught}</td>
+                    <td>${r.seen}</td>
+                    <td>${att ? `${acc}% <span class="muted small">(${cor}/${att})</span>` : '—'}</td>
+                </tr>`;
+            }).join('')}</tbody>
+        </table>
+        <p class="muted small">Caught / Seen counts and overall answer accuracy.
+            Students appear here once they sign in.</p>`;
+    wireRefresh();
 }
 
 boot();

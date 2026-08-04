@@ -9,7 +9,7 @@
 
 import GlobalInfo from '../GlobalInfo';
 import { getQuestion } from '../data/questionSource';
-import { markSeen, markCaught } from '../data/progress';
+import { markSeen, markCaught, recordAnswer } from '../data/progress';
 import { getElement } from '../data/elements';
 import { elementalArtKey } from '../data/elementalArt';
 import { cachedSettings } from '../data/classConfig';
@@ -187,6 +187,7 @@ export async function openQuiz(elementId: string): Promise<void> {
 
         // Any encounter counts as Seen (spec §4.2); markCaught also marks seen.
         if (!seenMarked) { markSeen(elementId); seenMarked = true; }
+        recordAnswer(elementId, isRight);      // mastery stats for the dashboard
 
         const answerText = question.choices[question.correctIndex];
         if (isRight) {
