@@ -8,6 +8,7 @@ import { basicMovement, clickToMove } from './components/Characters'
 import { Npc } from './components/Npc'
 import { getElement } from '../data/elements'
 import { elementalArtKey, elementalArtPath } from '../data/elementalArt'
+import { elementReleased } from '../data/classConfig'
 import { startBattle } from '../ui/QuizOverlay'
 import { showNpcDialog } from '../ui/NpcDialog'
 
@@ -231,6 +232,7 @@ export default abstract class GameScene extends Phaser.Scene {
     spawnElemental(elementId: string, x: number, y: number): void {
         const element = getElement(elementId)
         if (!element) return
+        if (!elementReleased(elementId)) return   // hidden until its release day
         const artKey = elementalArtKey(elementId)
 
         const npc = new Npc({
@@ -300,7 +302,10 @@ export default abstract class GameScene extends Phaser.Scene {
             const tile = this.map.getTileAt(p.x, p.y, false, LayerType.Walls)
             if (!tile || !grass.has(tile.index)) return
             if (Math.random() > chance) return
-            const id = pool[Math.floor(Math.random() * pool.length)]
+            // Only wild Elementals that have been released can appear.
+            const available = pool.filter(elementReleased)
+            if (available.length === 0) return
+            const id = available[Math.floor(Math.random() * available.length)]
             startBattle(id)
         })
         this.events.once('shutdown', () => sub.unsubscribe())

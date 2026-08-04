@@ -10,6 +10,7 @@ import GlobalInfo from '../GlobalInfo';
 import { ELEMENTS, ElementInfo } from '../data/elements';
 import { statusOf, counts } from '../data/progress';
 import { elementalArtKey } from '../data/elementalArt';
+import { elementReleased } from '../data/classConfig';
 
 let overlay: HTMLDivElement | null = null;
 
@@ -44,8 +45,11 @@ export function openIsotopedex(): void {
     if (overlay) return;
     setDialogue(true);
 
+    // Only released Elementals appear in the dex (locked ones stay hidden until
+    // their release day), so the total grows over the unit.
+    const released = ELEMENTS.filter(el => elementReleased(el.id));
     const c = counts();
-    const total = ELEMENTS.length;
+    const total = released.length;
 
     overlay = document.createElement('div');
     overlay.className = 'dex-overlay';
@@ -63,7 +67,7 @@ export function openIsotopedex(): void {
 
     const grid = overlay.querySelector('.dex-grid') as HTMLDivElement;
     // Ordered by atomic number, like a periodic-table index.
-    [...ELEMENTS]
+    [...released]
         .sort((a, b) => a.number - b.number)
         .forEach(el => grid.appendChild(makeCard(el)));
 

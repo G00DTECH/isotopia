@@ -62,3 +62,22 @@ export function isElementReleased(
     if (day == null) return true;
     return day <= currentUnitDay(s, today);
 }
+
+// --- Cached copy for the game. Loaded once at startup (game.ts) so scenes and
+// the Isotopedex can check release state synchronously. Defaults (everything
+// released) until loaded / if Firebase is unreachable, so the game never hides
+// content by accident.
+let cache: ClassSettings = { ...DEFAULT_SETTINGS };
+
+export async function loadAndCacheSettings(): Promise<ClassSettings> {
+    try { cache = await loadSettings(); }
+    catch { cache = { ...DEFAULT_SETTINGS }; }
+    return cache;
+}
+
+export function cachedSettings(): ClassSettings { return cache; }
+
+/** Release check against the cached settings — for game code. */
+export function elementReleased(elementId: string): boolean {
+    return isElementReleased(cache, elementId);
+}

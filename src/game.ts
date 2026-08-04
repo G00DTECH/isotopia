@@ -9,6 +9,7 @@ import LibraryScene from "./Scenes/LibraryScene";
 import WoodsScene from "./Scenes/WoodsScene";
 import { ensureSignedIn } from "./data/auth";
 import { loadQuestionBank } from "./data/questionSource";
+import { loadAndCacheSettings } from "./data/classConfig";
 import { initIsotopedex } from "./ui/Isotopedex";
 import { initIntro } from "./ui/Intro";
 
@@ -18,16 +19,20 @@ initIsotopedex();
 initIntro();
 
 // If Firebase is configured: sign the student in anonymously, then pull the live
-// question bank. If not (or on any error), the game just keeps the local seed.
+// question bank + class settings (which elements are released). We start Phaser
+// only AFTER this so the first scene already knows the release schedule; on any
+// error we fall back to the local seed + "everything released" defaults.
 (async () => {
     try {
         const uid = await ensureSignedIn();
-        await loadQuestionBank();
+        await Promise.all([loadQuestionBank(), loadAndCacheSettings()]);
         console.log(uid
-            ? `Isotopia: signed in (${uid.slice(0, 6)}…), questions loaded from Firebase.`
+            ? `Isotopia: signed in (${uid.slice(0, 6)}…), questions + settings loaded from Firebase.`
             : "Isotopia: Firebase not configured — using local questions.");
     } catch (err) {
         console.warn("Isotopia: using local questions (Firebase unavailable):", err);
+    } finally {
+        new Phaser.Game(config);
     }
 })();
 
@@ -67,5 +72,4 @@ const config = {
         }
     },
 };
-
-const game = new Phaser.Game(config);
+// The game is created inside the async bootstrap above (after settings load).
