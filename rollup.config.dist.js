@@ -5,13 +5,25 @@ import uglify from "@lopatnov/rollup-plugin-uglify";
 import typescript from 'rollup-plugin-typescript2';
 import copy from 'rollup-plugin-copy'
 
+// Firebase web config, injected from FIREBASE_* env vars at build time. Unset =>
+// empty string => the game runs fully offline (see src/data/firebase.ts).
+const FIREBASE_ENV_KEYS = [
+    'FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_DATABASE_URL', 'FIREBASE_PROJECT_ID',
+    'FIREBASE_STORAGE_BUCKET', 'FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_APP_ID', 'FIREBASE_MEASUREMENT_ID',
+];
+const firebaseReplacements = Object.fromEntries(
+    FIREBASE_ENV_KEYS.map(k => [`process.env.${k}`, JSON.stringify(process.env[k] || '')]),
+);
+
 const replaceOpts = {
+    preventAssignment: true,
     'typeof CANVAS_RENDERER': JSON.stringify(true),
     'typeof WEBGL_RENDERER': JSON.stringify(true),
     'typeof EXPERIMENTAL': JSON.stringify(true),
     'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
     'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
-    'typeof FEATURE_SOUND': JSON.stringify(true)
+    'typeof FEATURE_SOUND': JSON.stringify(true),
+    ...firebaseReplacements,
 };
 
 //  Fresh plugin instances per bundle (typescript2 keeps per-instance caches).

@@ -15,3 +15,10 @@ node_modules/
 # never commit Firebase Admin credentials
 serviceAccount.json
 firebase/seed/serviceAccount.json
+
+# Firebase Admin SDK service-account keys
+*firebase-adminsdk*.json
+
+# Local environment (Firebase web config etc.) — copy .env.example to .env
+.env
+.env.local

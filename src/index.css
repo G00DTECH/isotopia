@@ -112,7 +112,7 @@ html, body {
     100% { opacity: 0; }
 }
 
-/* ---- Elemonsters quiz: GBA-style battle overlay ---- */
+/* ---- Isotopia quiz: GBA-style battle overlay ---- */
 :root {
     --gba-font: 'Press Start 2P', 'Courier New', monospace;
 }
