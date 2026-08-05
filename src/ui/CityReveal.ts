@@ -13,21 +13,6 @@ function setDialogue(active: boolean): void {
     GlobalInfo.emit('inDialogue', active);
 }
 
-// A dark pine tree-line silhouette (built as an SVG path) that frames the bottom.
-function treeLineSvg(): string {
-    const W = 1200, H = 260, n = 22, step = W / n, base = H, valley = base - H * 0.16;
-    let d = `M0,${valley}`;
-    for (let i = 0; i < n; i++) {
-        const x = i * step;
-        const h = H * (0.4 + ((i * 41) % 100) / 100 * 0.5);   // varied peak heights
-        d += ` L${x.toFixed(0)},${valley.toFixed(0)}`
-           + ` L${(x + step / 2).toFixed(0)},${(base - h).toFixed(0)}`
-           + ` L${(x + step).toFixed(0)},${valley.toFixed(0)}`;
-    }
-    d += ` L${W},${valley} L${W},${base} L0,${base} Z`;
-    return `<svg class="cr-trees" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" fill="#0a1a10"/></svg>`;
-}
-
 export function playCityReveal(): void {
     if (playing) return;
     playing = true;
@@ -38,7 +23,7 @@ export function playCityReveal(): void {
     overlay.innerHTML = `
         <div class="cr-sky"></div>
         <img class="cr-bridge" src="assets/city/bridge.png" alt="A view of the distant city across the bridge">
-        ${treeLineSvg()}
+        <div class="cr-dog" aria-hidden="true"></div>
         <div class="cr-caption"></div>`;
     document.body.appendChild(overlay);
     const caption = overlay.querySelector('.cr-caption') as HTMLElement;
