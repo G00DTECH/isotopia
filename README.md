@@ -105,6 +105,11 @@ press-and-hold the **Isotopedex title** for ~1s to open it.
 
 ## Credits & license
 
-Game engine scaffold adapted from
-[danielart/phaser-rpg-template](https://github.com/danielart/phaser-rpg-template)
-(MIT). Released under the MIT License — see [`LICENSE`](LICENSE).
+- **Engine:** Phaser 3 + [grid-engine](https://github.com/Annoraaq/grid-engine),
+  scaffolded from [danielart/phaser-rpg-template](https://github.com/danielart/phaser-rpg-template) (MIT).
+- **Tilesets & character sprites:** [LimeZu](https://limezu.itch.io/) "Modern
+  Exteriors / Interiors" — used with LimeZu's express permission for this free
+  educational game.
+- **All other art** (Luna Town interiors, the building & bridge artwork, the dog)
+  was created by the project author.
+- Code is released under the MIT License — see [`LICENSE`](LICENSE).

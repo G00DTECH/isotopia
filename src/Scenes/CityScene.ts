@@ -62,6 +62,9 @@ export default class CityScene extends GameScene {
 
     loadObjectImages(): void {
         BUILDINGS.forEach(b => this.load.image(`city_${b.id}`, `assets/city/${b.id}.png`));
+        // Human pedestrian sprites (grid-engine standard 3x4 layout per person).
+        this.load.spritesheet(this.imageNames.Veterinary, 'assets/Characters/NPCs_1.png',
+            { frameWidth: 32, frameHeight: 64 });
     }
 
     create(): void {
@@ -92,7 +95,15 @@ export default class CityScene extends GameScene {
     }
 
     createNpcs(): void {
-        // No NPCs in the city yet — expansion room for shops, characters, quizzes.
+        // Pedestrians wandering the streets + plaza — (charIndex, col, row). All
+        // on clearly walkable tiles (roads / open plaza) so they roam freely.
+        const people: [number, number, number][] = [
+            [0, 7, 15], [1, 36, 15],   // top street
+            [2, 7, 31], [3, 36, 31],   // middle street
+            [4, 20, 36], [5, 23, 36],  // plaza
+            [6, 10, 48], [7, 34, 48],  // front street
+        ];
+        people.forEach(([i, x, y]) => this.spawnPedestrian(i, x, y));
     }
 
     update(): void {

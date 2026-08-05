@@ -269,6 +269,22 @@ export default abstract class GameScene extends Phaser.Scene {
         this.gridEngine.moveRandomly(npc.name, 2000, 2)
     }
 
+    // A city pedestrian: a human character from the NPC sheet (grid-engine's
+    // standard 3x4 layout — `charIndex` picks which person) who wanders the
+    // nearby streets. grid-engine's random movement respects collision, so they
+    // keep to the pavement and never walk through buildings.
+    spawnPedestrian(charIndex: number, x: number, y: number, radius: number = 3): void {
+        const npc = new Npc({
+            scene: this,
+            xPosition: x,
+            yPosition: y,
+            texture: this.imageNames.Veterinary,
+            scale: 0.7,
+            walkingAnimationMapping: charIndex,
+        })
+        this.gridEngine.moveRandomly(npc.name, 1500, radius)
+    }
+
     // A companion NPC: walk up to it to trigger a one-time dialog, after which it
     // becomes a follower that trails the player around the scene. Used for Neonu
     // Reeves in the woods. Single-frame art → no walking-animation mapping.
