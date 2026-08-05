@@ -17,20 +17,20 @@ import { MAPS } from '../data/maps';
 // Keep BUILDINGS in sync with tools/gen_city.py PLACEMENTS (the collision
 // footprints in city_map.json are generated from the same numbers).
 const BUILDINGS: { id: string; centerCol: number; baseRow: number; widthTiles: number }[] = [
-    { id: 'power-tower',      centerCol: 8,  baseRow: 13, widthTiles: 5.0 },
-    { id: 'finance-tower',    centerCol: 22, baseRow: 13, widthTiles: 5.0 },
-    { id: 'large-tower',      centerCol: 36, baseRow: 13, widthTiles: 6.0 },
-    { id: 'large-church',     centerCol: 8,  baseRow: 29, widthTiles: 5.5 },
-    { id: 'museum',           centerCol: 22, baseRow: 29, widthTiles: 5.0 },
-    { id: 'fashion-district', centerCol: 36, baseRow: 29, widthTiles: 5.0 },
-    { id: 'radio-tower',      centerCol: 9,  baseRow: 45, widthTiles: 3.5 },
-    { id: 'power-station',    centerCol: 22, baseRow: 45, widthTiles: 8.0 },
-    { id: 'radio-tower-2',    centerCol: 35, baseRow: 45, widthTiles: 3.5 },
+    { id: 'power-tower',      centerCol: 12, baseRow: 24, widthTiles: 10.0 },
+    { id: 'finance-tower',    centerCol: 28, baseRow: 24, widthTiles: 5.0 },
+    { id: 'large-tower',      centerCol: 44, baseRow: 24, widthTiles: 6.0 },
+    { id: 'museum',           centerCol: 12, baseRow: 50, widthTiles: 5.0 },
+    { id: 'large-church',     centerCol: 28, baseRow: 50, widthTiles: 11.0 },
+    { id: 'fashion-district', centerCol: 44, baseRow: 50, widthTiles: 5.0 },
+    { id: 'radio-tower',      centerCol: 12, baseRow: 66, widthTiles: 3.5 },
+    { id: 'power-station',    centerCol: 28, baseRow: 66, widthTiles: 16.0 },
+    { id: 'radio-tower-2',    centerCol: 44, baseRow: 66, widthTiles: 3.5 },
 ];
 
 export default class CityScene extends GameScene {
-    private static readonly START = { x: 22, y: 47 };
-    private static readonly EXIT = { x: 22, y: 50 };
+    private static readonly START = { x: 24, y: 70 };
+    private static readonly EXIT = { x: 30, y: 71 };
 
     constructor() {
         super(SceneName.City, CityScene.START.x, CityScene.START.y, [LayerType.Floor, LayerType.Walls]);
@@ -77,10 +77,14 @@ export default class CityScene extends GameScene {
         BUILDINGS.forEach(b => this.drawBuilding(b));
 
         // Plaza dressing: lit lamps (glow at dusk) + benches around the centre.
-        this.drawProp('city_lamp', 20, 36, 1.4);
-        this.drawProp('city_lamp', 24, 36, 1.4);
-        this.drawProp('city_bench', 20, 38, 1.8);
-        this.drawProp('city_bench', 24, 38, 1.8);
+        this.drawProp('city_lamp', 26, 56, 1.4);
+        this.drawProp('city_lamp', 31, 56, 1.4);
+        this.drawProp('city_bench', 26, 57, 1.8);
+        this.drawProp('city_bench', 31, 57, 1.8);
+
+        // Street lamps dotted along the avenues (decorative — no collision).
+        [[4, 30], [49, 30], [4, 55], [49, 55], [20, 40], [35, 40], [20, 62], [35, 62]]
+            .forEach(([c, r]) => this.drawProp('city_lamp', c, r, 1.3));
 
         // Way back to the woods lookout (step onto the pad from the north).
         new Door({
@@ -118,23 +122,23 @@ export default class CityScene extends GameScene {
         // Pedestrians wandering the streets + plaza — (charIndex, col, row). All
         // on clearly walkable tiles (roads / open plaza) so they roam freely.
         const people: [number, number, number][] = [
-            [0, 7, 15], [1, 36, 15],   // top street
-            [2, 7, 31], [3, 36, 31],   // middle street
-            [4, 20, 36], [5, 23, 36],  // plaza
-            [6, 10, 48], [7, 34, 48],  // front street
+            [0, 8, 26], [1, 44, 26],   // top avenue
+            [2, 8, 52], [3, 44, 52],   // middle avenue
+            [4, 24, 56], [5, 32, 56],  // plaza
+            [6, 10, 69], [7, 42, 69],  // south avenue
         ];
         people.forEach(([i, x, y]) => this.spawnPedestrian(i, x, y));
 
         // A few characters who say hello when you walk up to them.
-        this.spawnTalkingNpc(1, 22, 40, 'City Guide', [
+        this.spawnTalkingNpc(1, 28, 52, 'City Guide', [
             'Welcome to the city! It grew from every element you catch.',
             'Have a wander — there is more to come here soon.',
         ]);
-        this.spawnTalkingNpc(3, 13, 43, 'Professor', [
+        this.spawnTalkingNpc(3, 14, 54, 'Professor', [
             'Look around: concrete, steel, glass, neon…',
             'Every bit of this city is chemistry at work!',
         ]);
-        this.spawnTalkingNpc(5, 31, 43, 'City Kid', [
+        this.spawnTalkingNpc(5, 40, 54, 'City Kid', [
             'Whoa, a dog downtown!',
             'Did you see the towers? They are HUGE.',
         ]);

@@ -3,13 +3,15 @@
 
 The next-map-expansion city you reach across the bridge from the woods lookout.
 A light-pavement (sidewalk) city with a grid of darker asphalt roads, a central
-cobblestone plaza with a couple of trees, and the nine city buildings laid out in
-three rows. Each building is an invisible-but-solid collision footprint (blank16),
-bottom-anchored to its base row and sized to the (cropped) art, so the overlay
-images drawn in CityScene line up with what blocks the dog. Buildings are
-decorative (not enterable), so unlike the town there's no walkable door gap.
+cobblestone plaza, and street trees. Nine city buildings sit in a loose 3x3 grid;
+three of them (power-tower, large-church, power-station) are doubled in size, so
+the map is spaced out to fit their tall footprints without overlapping neighbours.
 
-Keep PLACEMENTS in sync with CityScene.ts BUILDINGS. Run:
+Each building is an invisible-but-solid collision footprint (blank16),
+bottom-anchored to its base row and sized to the (cropped) art, so the overlay
+images drawn in CityScene line up with what blocks the dog.
+
+Keep the constants below in sync with CityScene.ts. Run:
     python3 tools/gen_city.py   (writes src/assets/tilemap/city_map.json)
 """
 import json, os
@@ -18,35 +20,38 @@ from PIL import Image
 SHEET_COLS = 141
 def gid(col, row): return row * SHEET_COLS + col + 1
 
-W, H = 44, 52
+W, H = 52, 72
 SIDEWALK = gid(43, 2)                      # light cream pavement (base)
 ROAD     = gid(34, 6)                      # dark asphalt (road grid)
 PLAZA    = gid(17, 1)                      # grey cobblestone (central plaza)
+TREE = dict(sc=16, sr=3, w=2, h=3)         # 2x3 tree, trunk row blocks
 
-# 2x3 tree (trunk row blocks) — reused from the woods, for the plaza greenery.
-TREE = dict(sc=16, sr=3, w=2, h=3)
-
-BLANK_FIRST = SHEET_COLS * 118 + 1        # firstgid after modern_exterior (141x118)
-BLANK_SOLID = BLANK_FIRST + 1             # blank16 tile id 1 = transparent + ge_collide
+BLANK_FIRST = SHEET_COLS * 118 + 1
+BLANK_SOLID = BLANK_FIRST + 1
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 def art_aspect(name):
     im = Image.open(os.path.join(_HERE, '..', 'src', 'assets', 'city', name + '.png'))
     return im.height / im.width
 
-# (id, centre_col, base_row, width_tiles). Three rows of three, tall towers up
-# top, the wide power-station anchoring the front row.
+# (id, centre_col, base_row, width_tiles). Cols 12 / 28 / 44; base rows 24 / 50 /
+# 66. power-tower, large-church and power-station are 2x their old width.
 PLACEMENTS = [
-    ('power-tower',      8, 13, 5.0),
-    ('finance-tower',   22, 13, 5.0),
-    ('large-tower',     36, 13, 6.0),
-    ('large-church',     8, 29, 5.5),
-    ('museum',          22, 29, 5.0),
-    ('fashion-district',36, 29, 5.0),
-    ('radio-tower',      9, 45, 3.5),
-    ('power-station',   22, 45, 8.0),
-    ('radio-tower-2',   35, 45, 3.5),
+    ('power-tower',     12, 24, 10.0),
+    ('finance-tower',   28, 24,  5.0),
+    ('large-tower',     44, 24,  6.0),
+    ('museum',          12, 50,  5.0),
+    ('large-church',    28, 50, 11.0),
+    ('fashion-district',44, 50,  5.0),
+    ('radio-tower',     12, 66,  3.5),
+    ('power-station',   28, 66, 16.0),
+    ('radio-tower-2',   44, 66,  3.5),
 ]
+H_ROADS = (25, 26, 51, 52, 67, 68)
+V_ROADS = (0, 1, 18, 19, 36, 37, 50, 51)
+PLAZA_RECT = (20, 53, 36, 58)              # cols 20-35, rows 53-57
+PLAZA_TREES = [(22, 55), (33, 55)]         # flank the plaza (centre left open)
+STREET_TREES = [(6, 32), (6, 46), (46, 32), (46, 46), (16, 46), (38, 46)]
 
 floor = [SIDEWALK] * (W * H)
 walls = [0] * (W * H)
@@ -56,17 +61,17 @@ def put(layer, tx, ty, g):
     if 0 <= tx < W and 0 <= ty < H:
         layer[ty * W + tx] = g
 
-# --- asphalt road grid (streets between the building rows/columns) ---
-for ty in (14, 15, 30, 31, 47, 48):
+# --- asphalt road grid ---
+for ty in H_ROADS:
     for tx in range(W):
         put(floor, tx, ty, ROAD)
-for tx in (0, 1, 14, 15, 28, 29, 42, 43):
+for tx in V_ROADS:
     for ty in range(H):
         put(floor, tx, ty, ROAD)
 
-# --- central cobblestone plaza (in the open band between rows 2 and 3) ---
-for ty in range(33, 39):
-    for tx in range(16, 29):
+# --- central cobblestone plaza ---
+for ty in range(PLAZA_RECT[1], PLAZA_RECT[3]):
+    for tx in range(PLAZA_RECT[0], PLAZA_RECT[2]):
         put(floor, tx, ty, PLAZA)
 
 # --- buildings: invisible solid footprints, bottom-anchored to the base row ---
@@ -79,7 +84,7 @@ for (name, cx, base, wt) in PLACEMENTS:
         for tx in range(left, left + coll_w):
             put(walls, tx, ty, BLANK_SOLID)
 
-# --- a couple of park trees flanking the plaza (trunk row blocks) ---
+# --- trees (plaza + along the streets); trunk row blocks ---
 def plant_tree(ox, oy):
     for dy in range(TREE['h']):
         for dx in range(TREE['w']):
@@ -87,8 +92,8 @@ def plant_tree(ox, oy):
             put(walls, ox + dx, oy + dy, g)
             if dy == TREE['h'] - 1:
                 collide.add(g)
-plant_tree(17, 35)
-plant_tree(25, 35)
+for (ox, oy) in PLAZA_TREES + STREET_TREES:
+    plant_tree(ox, oy)
 
 tileset_tiles = [
     {"id": g - 1, "properties": [{"name": "ge_collide", "type": "bool", "value": True}]}

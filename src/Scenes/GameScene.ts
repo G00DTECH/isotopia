@@ -279,7 +279,7 @@ export default abstract class GameScene extends Phaser.Scene {
             xPosition: x,
             yPosition: y,
             texture: this.imageNames.Veterinary,
-            scale: 0.7,
+            scale: 0.35,
             walkingAnimationMapping: charIndex,
         })
         this.gridEngine.moveRandomly(npc.name, 1500, radius)
@@ -293,7 +293,7 @@ export default abstract class GameScene extends Phaser.Scene {
             xPosition: x,
             yPosition: y,
             texture: this.imageNames.Veterinary,
-            scale: 0.7,
+            scale: 0.35,
             walkingAnimationMapping: charIndex,
             action: () => {
                 npc.proximityTrigger = false
