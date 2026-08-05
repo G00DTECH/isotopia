@@ -65,6 +65,9 @@ export default class CityScene extends GameScene {
         // Human pedestrian sprites (grid-engine standard 3x4 layout per person).
         this.load.spritesheet(this.imageNames.Veterinary, 'assets/Characters/NPCs_1.png',
             { frameWidth: 32, frameHeight: 64 });
+        // Plaza props.
+        this.load.image('city_lamp', 'assets/city/lamp.png');
+        this.load.image('city_bench', 'assets/city/bench.png');
     }
 
     create(): void {
@@ -72,6 +75,12 @@ export default class CityScene extends GameScene {
 
         // Real building art over the invisible collision footprints.
         BUILDINGS.forEach(b => this.drawBuilding(b));
+
+        // Plaza dressing: lit lamps (glow at dusk) + benches around the centre.
+        this.drawProp('city_lamp', 20, 36, 1.4);
+        this.drawProp('city_lamp', 24, 36, 1.4);
+        this.drawProp('city_bench', 20, 38, 1.8);
+        this.drawProp('city_bench', 24, 38, 1.8);
 
         // Way back to the woods lookout (step onto the pad from the north).
         new Door({
@@ -94,6 +103,17 @@ export default class CityScene extends GameScene {
             .setDepth(1);
     }
 
+    // A decorative prop (lamp, bench…) anchored bottom-centre on a tile, scaled
+    // to `tilesWide`. Depth 1 like buildings, so the dog walks in front.
+    private drawProp(key: string, col: number, row: number, tilesWide: number): void {
+        const src = this.textures.get(key).getSourceImage() as HTMLImageElement;
+        const scale = (tilesWide * 16) / src.width;
+        this.add.image((col + 0.5) * 16, (row + 1) * 16, key)
+            .setOrigin(0.5, 1)
+            .setScale(scale)
+            .setDepth(1);
+    }
+
     createNpcs(): void {
         // Pedestrians wandering the streets + plaza — (charIndex, col, row). All
         // on clearly walkable tiles (roads / open plaza) so they roam freely.
@@ -104,6 +124,20 @@ export default class CityScene extends GameScene {
             [6, 10, 48], [7, 34, 48],  // front street
         ];
         people.forEach(([i, x, y]) => this.spawnPedestrian(i, x, y));
+
+        // A few characters who say hello when you walk up to them.
+        this.spawnTalkingNpc(1, 22, 40, 'City Guide', [
+            'Welcome to the city! It grew from every element you catch.',
+            'Have a wander — there is more to come here soon.',
+        ]);
+        this.spawnTalkingNpc(3, 13, 43, 'Professor', [
+            'Look around: concrete, steel, glass, neon…',
+            'Every bit of this city is chemistry at work!',
+        ]);
+        this.spawnTalkingNpc(5, 31, 43, 'City Kid', [
+            'Whoa, a dog downtown!',
+            'Did you see the towers? They are HUGE.',
+        ]);
     }
 
     update(): void {
