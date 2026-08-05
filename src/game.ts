@@ -7,6 +7,7 @@ import HannafordScene from "./Scenes/HannafordScene";
 import AutoScene from "./Scenes/AutoScene";
 import LibraryScene from "./Scenes/LibraryScene";
 import WoodsScene from "./Scenes/WoodsScene";
+import CityScene from "./Scenes/CityScene";
 import { ensureSignedIn } from "./data/auth";
 import { initStudentAuth } from "./data/studentAuth";
 import { loadQuestionBank } from "./data/questionSource";
@@ -47,7 +48,7 @@ const config = {
     // Crisp upscaling of the pixel art now that FIT stretches the canvas to fill
     // an iPad screen (default linear filtering would blur it).
     pixelArt: true,
-    scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene, WoodsScene],
+    scene: [TestScene, HomeScene, HardwareScene, HannafordScene, AutoScene, LibraryScene, WoodsScene, CityScene],
     plugins: {
         scene: [
             {

@@ -92,7 +92,7 @@ export default class WoodsScene extends GameScene {
             if (o.charId !== this.playerName) return;
             if (GlobalInfo._gameProgress.inDialogue) return;
             const p = this.gridEngine.getPosition(this.playerName);
-            if (p.x === 20 && p.y <= 1) playCityReveal();
+            if (p.x === 20 && p.y <= 1) playCityReveal(() => this.switch(SceneName.City));
         });
         this.events.once('shutdown', () => cityReveal.unsubscribe());
     }

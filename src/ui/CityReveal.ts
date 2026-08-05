@@ -13,7 +13,7 @@ function setDialogue(active: boolean): void {
     GlobalInfo.emit('inDialogue', active);
 }
 
-export function playCityReveal(): void {
+export function playCityReveal(onEnter?: () => void): void {
     if (playing) return;
     playing = true;
     setDialogue(true);                 // freeze the dog for the cutscene
@@ -33,20 +33,24 @@ export function playCityReveal(): void {
     // Slowly pan out to reveal the whole bridge.
     requestAnimationFrame(() => overlay.classList.add('cr-bridge-in'));
 
-    // Once it has settled, let the player linger, then tap to return.
+    // Once it has settled, let the player linger, then tap to cross into the
+    // city (or head back to the woods if there's nowhere to go).
     const t = window.setTimeout(() => {
-        caption.textContent = 'Across the bridge lies a city…   (tap to head back)';
-        overlay.addEventListener('click', dismiss);
+        caption.textContent = onEnter
+            ? 'Cross the bridge…   (tap to enter the city)'
+            : 'Across the bridge lies a city…   (tap to head back)';
+        overlay.addEventListener('click', finish);
     }, 9600);
 
-    function dismiss(): void {
-        overlay.removeEventListener('click', dismiss);
+    function finish(): void {
+        overlay.removeEventListener('click', finish);
         clearTimeout(t);
         overlay.classList.add('cr-out');
+        setDialogue(false);            // unfreeze so the city (or woods) is playable
+        if (onEnter) onEnter();        // switch into the city scene
         window.setTimeout(() => {
             overlay.remove();
             playing = false;
-            setDialogue(false);
         }, 700);
     }
 }
