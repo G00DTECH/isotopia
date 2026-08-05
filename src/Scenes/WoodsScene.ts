@@ -7,6 +7,8 @@ import { Door } from './components/Door';
 import { drawDoorCue } from './components/DoorCue';
 import { SceneName } from './enums/SceneNames';
 import { MAPS } from '../data/maps';
+import GlobalInfo from '../GlobalInfo';
+import { playCityReveal } from '../ui/CityReveal';
 
 // The North Woods & Meadow — a natural area reached by following the trail north
 // out of town (see the Woods door in TestScene). The whole scene is built from
@@ -83,6 +85,16 @@ export default class WoodsScene extends GameScene {
 
         // Wild Elementals ambush you in the tall grass, Pokémon-style.
         this.enableGrassEncounters(WoodsScene.GRASS_POOL, WoodsScene.GRASS_GIDS);
+
+        // Secret lookout: walk up the hidden corridor (column 20) to the very top
+        // of the woods to trigger the city-reveal cutscene.
+        const cityReveal = this.gridEngine.movementStopped().subscribe((o) => {
+            if (o.charId !== this.playerName) return;
+            if (GlobalInfo._gameProgress.inDialogue) return;
+            const p = this.gridEngine.getPosition(this.playerName);
+            if (p.x === 20 && p.y <= 1) playCityReveal();
+        });
+        this.events.once('shutdown', () => cityReveal.unsubscribe());
     }
 
     createNpcs(): void {

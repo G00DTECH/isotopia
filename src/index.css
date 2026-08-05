@@ -337,6 +337,54 @@ html, body {
     100% { opacity: 0; background: #08101f; }
 }
 
+/* ---- Secret-path city reveal cutscene (see src/ui/CityReveal.ts) ---- */
+.city-reveal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: #04050a;
+    overflow: hidden;
+    cursor: pointer;
+}
+.city-reveal img {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+}
+/* Bridge: starts zoomed in + faded, slowly eases out to the whole image. */
+.cr-bridge { opacity: 0; transform: scale(1.6); }
+.city-reveal.cr-bridge-in .cr-bridge {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 1.4s ease, transform 4.6s ease-out;
+}
+/* City: hidden until phase 3, then drifts in. */
+.cr-city { opacity: 0; transform: scale(1.1); }
+.city-reveal.cr-city-in .cr-city {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 1.4s ease, transform 6s ease-out;
+}
+/* Black wash between the two reveals. */
+.cr-black { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 1; pointer-events: none; }
+.city-reveal.cr-to-black .cr-black { opacity: 1; transition: opacity 1.2s ease; }
+.city-reveal.cr-city-in .cr-black { opacity: 0; transition: opacity 1.4s ease; }
+.cr-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 9%;
+    z-index: 2;
+    text-align: center;
+    font-family: var(--gba-font);
+    font-size: 12px;
+    line-height: 1.6;
+    color: #fff;
+    text-shadow: 0 2px 0 #000, 0 0 8px rgba(0, 0, 0, 0.6);
+}
+.city-reveal.cr-out { opacity: 0; transition: opacity 0.7s ease; }
+
 /* ✓ / ✗ so right-vs-wrong isn't signalled by colour alone. */
 .quiz-mark { float: right; font-weight: bold; font-size: 14px; }
 

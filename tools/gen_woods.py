@@ -117,6 +117,15 @@ for _ in range(70):
     else:
         put(walls, tx, ty, random.choice(TUFTS))
 
+# --- Secret path: a hidden corridor straight up the trail, through the top tree
+# line, to a lookout at the very top edge. Stepping onto the top tile triggers a
+# cutscene that reveals the distant city (see WoodsScene). Clearing the walls
+# opens a visible gap in the tree wall — the "secret path".
+SECRET_COL = 20
+for ty in range(0, 6):
+    put(floor, SECRET_COL, ty, PATH)
+    walls[ty * W + SECRET_COL] = 0        # clear trees/decoration so it's walkable
+
 tileset_tiles = [
     {"id": g - 1, "properties": [{"name": "ge_collide", "type": "bool", "value": True}]}
     for g in sorted(collide)
