@@ -22,8 +22,10 @@ export function playCityReveal(): void {
     overlay.className = 'city-reveal';
     overlay.innerHTML = `
         <div class="cr-sky"></div>
-        <img class="cr-bridge" src="assets/city/bridge.png" alt="A view of the distant city across the bridge">
-        <div class="cr-dog" aria-hidden="true"></div>
+        <div class="cr-stage">
+            <img class="cr-bridge" src="assets/city/bridge.png" alt="A view of the distant city across the bridge">
+            <div class="cr-dog" aria-hidden="true"></div>
+        </div>
         <div class="cr-caption"></div>`;
     document.body.appendChild(overlay);
     const caption = overlay.querySelector('.cr-caption') as HTMLElement;
